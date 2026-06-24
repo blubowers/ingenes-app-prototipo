@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ingenes · App Pacientes</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Quattrocento+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --ing-navy: #1B3A5C;
+    --ing-navy-deep: #122a45;
+    --ing-blue: #4A8AB5;
+    --ing-blue-soft: #D4EAF5;
+    --ing-blue-tint: #eef6fc;
+    --ing-gold: #c8a040;
+    --ing-gold-deep: #b08a32;
+    --ing-gold-soft: #f6edd8;
+    --ing-bg: #f3f6fb;
+    --ing-white: #ffffff;
+    --ing-text: #16263b;
+    --ing-muted: #74839c;
+    --ing-border: #e6ecf4;
+    --shadow-soft: 0 6px 20px rgba(27,58,92,0.06);
+    --shadow-card: 0 10px 30px rgba(27,58,92,0.08);
+  }
+
+  body {
+    background: #dfe6f1;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; padding: 24px 0;
+    font-family: 'Quattrocento Sans', sans-serif;
+    color: var(--ing-text);
+  }
+
+  .hidden { display: none !important; }
+
+  .phone {
+    width: 380px; height: 800px;
+    background: var(--ing-bg);
+    border-radius: 46px;
+    box-shadow: 0 30px 80px rgba(18,42,69,0.30);
+    overflow: hidden; position: relative;
+    display: flex; flex-direction: column;
+    border: 9px solid #0d2138;
+  }
+
+  .status-bar {
+    background: var(--ing-navy);
+    color: #fff; display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 24px 8px; font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .status-bar .dots { letter-spacing: 2px; opacity: .8; }
+
+  #app { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .screen.active { display: flex; }
+
+  /* HEADERS */
+  .top-bar {
+    background: linear-gradient(160deg, var(--ing-navy) 0%, var(--ing-navy-deep) 100%);
+    padding: 16px 22px 26px; flex-shrink: 0; position: relative;
+    border-bottom-left-radius: 26px; border-bottom-right-radius: 26px;
+  }
+  .top-bar .row { display: flex; align-items: center; justify-content: space-between; }
+  .top-bar .greeting { color: rgba(255,255,255,0.72); font-size: 13px; }
+  .top-bar .name { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 25px; font-weight: 600; margin-top: 2px; line-height: 1.1; }
+  .top-bar .subtitle { color: var(--ing-gold); font-size: 12px; margin-top: 5px; font-weight: 700; letter-spacing: .02em; }
+  .top-bar .bell { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; position: relative; }
+  .top-bar .bell i { color: #fff; font-size: 20px; }
+  .top-bar .bell .badge { position: absolute; top: 6px; right: 7px; }
+  .top-bar .h-actions { display: flex; align-items: center; gap: 11px; }
+
+  .top-bar-simple {
+    background: linear-gradient(160deg, var(--ing-navy) 0%, var(--ing-navy-deep) 100%);
+    padding: 18px 22px 22px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    border-bottom-left-radius: 26px; border-bottom-right-radius: 26px;
+  }
+  .top-bar-simple h1 { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 23px; font-weight: 600; }
+  .top-bar-simple .h-left { display: flex; align-items: center; gap: 12px; }
+  .top-bar-simple .hicon { width: 40px; height: 40px; border-radius: 13px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .top-bar-simple .hicon i { color: #fff; font-size: 19px; }
+
+  .scroll-area { flex: 1; overflow-y: auto; padding: 18px 16px 22px; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  .badge { background: var(--ing-gold); color: #fff; font-size: 10px; font-weight: 700; min-width: 16px; height: 16px; line-height: 16px; text-align: center; padding: 0 4px; border-radius: 10px; }
+
+  /* CARD */
+  .card { background: var(--ing-white); border-radius: 22px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow-soft); }
+  .section-title { font-size: 11px; font-weight: 700; color: var(--ing-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 8px 4px 10px; }
+
+  /* AVATARS */
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; font-family: 'Quattrocento Sans', sans-serif; background-size: cover; background-position: center; }
+  .avatar.navy { background: var(--ing-navy); color: #fff; }
+  .avatar.gold { background: var(--ing-gold); color: #fff; }
+  .avatar.blue { background: var(--ing-blue); color: #fff; }
+  .avatar.soft { background: var(--ing-blue-soft); color: var(--ing-navy); }
+  .has-photo .ini { display: none; }
+
+  /* ===== JOURNEY PROGRESS ===== */
+  .journey-card { background: linear-gradient(155deg, var(--ing-navy) 0%, var(--ing-navy-deep) 100%); border-radius: 24px; padding: 18px 20px 20px; margin-bottom: 16px; box-shadow: var(--shadow-card); }
+  .journey-card .jc-label { color: var(--ing-gold); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+  .journey-card .jc-title { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 21px; font-weight: 600; margin: 3px 0 16px; }
+  .steps { display: flex; align-items: flex-start; justify-content: space-between; position: relative; }
+  .steps::before { content: ''; position: absolute; top: 13px; left: 12%; right: 12%; height: 2px; background: rgba(255,255,255,0.18); }
+  .step { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 20%; position: relative; z-index: 1; }
+  .step .dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.6); border: 2px solid transparent; }
+  .step.done .dot { background: var(--ing-gold); color: #fff; }
+  .step.current .dot { background: #fff; color: var(--ing-navy); border-color: var(--ing-gold); box-shadow: 0 0 0 4px rgba(200,160,64,0.25); }
+  .step .lbl { font-size: 9.5px; text-align: center; color: rgba(255,255,255,0.7); line-height: 1.25; }
+  .step.current .lbl { color: #fff; font-weight: 700; }
+  .step.done .lbl { color: rgba(255,255,255,0.85); }
+  .steps.six .step { width: 16.4%; }
+  .steps.six .lbl { font-size: 8.5px; }
+  .steps.six::before { left: 9%; right: 9%; }
+
+  /* first-visit inclusions list */
+  .incl { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--ing-border); }
+  .incl:last-child { border-bottom: none; }
+  .incl i { color: #0d8a63; font-size: 18px; margin-top: 1px; flex-shrink: 0; }
+  .incl span { font-size: 13px; color: #3a4a64; line-height: 1.4; }
+
+  /* ===== UPDATE / FEED CARD (journey timeline) ===== */
+  .update { background: var(--ing-white); border-radius: 22px; padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow-soft); position: relative; }
+  .update.pinned { border: 1.5px solid var(--ing-gold-soft); }
+  .u-head { display: flex; align-items: center; gap: 11px; margin-bottom: 11px; }
+  .u-meta .sender { font-size: 13.5px; font-weight: 700; color: var(--ing-text); }
+  .u-meta .role { font-size: 11px; color: var(--ing-gold-deep); font-weight: 700; margin-top: 1px; }
+  .u-meta .time { font-size: 11px; color: var(--ing-muted); margin-top: 1px; }
+  .u-body { font-size: 13.5px; color: #3a4a64; line-height: 1.6; }
+  .u-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--ing-blue-tint); color: var(--ing-navy); font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; }
+  .u-tag.gold { background: var(--ing-gold-soft); color: var(--ing-gold-deep); }
+  .u-tag.green { background: #e3f3ec; color: #0d8a63; }
+
+  /* attachment */
+  .attach { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 11px 13px; background: var(--ing-blue-tint); border-radius: 14px; cursor: pointer; }
+  .attach .ai { width: 38px; height: 38px; border-radius: 11px; background: var(--ing-navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .attach .ai i { color: #fff; font-size: 19px; }
+  .attach .at { flex: 1; min-width: 0; }
+  .attach .at .t { font-size: 12.5px; font-weight: 700; color: var(--ing-text); }
+  .attach .at .s { font-size: 11px; color: var(--ing-muted); margin-top: 1px; }
+  .attach .chev { color: var(--ing-gold-deep); font-size: 18px; }
+
+  .u-actions { display: flex; gap: 10px; margin-top: 13px; }
+  .btn-primary { flex: 1; background: var(--ing-navy); color: #fff; border: none; border-radius: 13px; padding: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-ghost { flex: 1; background: var(--ing-blue-tint); color: var(--ing-navy); border: none; border-radius: 13px; padding: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+  /* completed appointment chip inside update */
+  .done-row { display: flex; align-items: center; gap: 11px; }
+  .done-icon { width: 44px; height: 44px; border-radius: 14px; background: #e3f3ec; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .done-icon i { color: #0d8a63; font-size: 22px; }
+
+  /* appointment details (stage 1) */
+  .appt-card { background: var(--ing-blue-tint); border-radius: 14px; padding: 13px 14px; margin-top: 12px; }
+  .appt-card .modality { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700; padding: 4px 11px; border-radius: 20px; margin-bottom: 9px; }
+  .appt-card .modality i { font-size: 13px; }
+  .modality.presencial { background: var(--ing-navy); color: #fff; }
+  .modality.online { background: #e3f3ec; color: #0d8a63; }
+  .appt-card .ad-row { display: flex; align-items: center; gap: 9px; font-size: 13px; color: #3a4a64; padding: 5px 0; }
+  .appt-card .ad-row i { font-size: 17px; color: var(--ing-navy); flex-shrink: 0; }
+  .appt-card .ad-row a { color: var(--ing-gold-deep); font-weight: 700; text-decoration: none; cursor: pointer; }
+  .contact-legend { font-size: 12px; color: var(--ing-muted); text-align: center; margin-top: 13px; }
+
+  /* ===== EQUIPO (team list + WhatsApp) ===== */
+  .equipo-view { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .team-doc { background: #fff; border-radius: 22px; padding: 16px 16px 18px; box-shadow: var(--shadow-soft); margin-bottom: 16px; }
+  .team-doc .td-top { display: flex; gap: 14px; }
+  .team-doc .td-photo { width: 92px; height: 112px; border-radius: 16px; object-fit: cover; flex-shrink: 0; background: var(--ing-blue-tint); }
+  .team-doc .td-spec { display: inline-block; background: var(--ing-gold-soft); color: var(--ing-gold-deep); font-size: 9.5px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 7px; line-height: 1.35; }
+  .team-doc .td-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--ing-text); font-weight: 600; line-height: 1.08; }
+  .team-doc .td-suc { font-size: 12px; color: var(--ing-muted); margin-top: 6px; display: flex; align-items: center; gap: 5px; }
+  .team-doc .td-suc i { color: var(--ing-gold-deep); font-size: 14px; }
+  .team-doc .td-suc b { color: var(--ing-text); }
+  .team-doc .td-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+  .team-doc .td-grid .k { font-size: 9.5px; font-weight: 700; color: var(--ing-gold-deep); text-transform: uppercase; letter-spacing: .04em; }
+  .team-doc .td-grid .v { font-size: 13px; color: var(--ing-text); font-weight: 700; margin-top: 3px; }
+  .btn-wa { width: 100%; margin-top: 16px; background: #25D366; color: #fff; border: none; border-radius: 13px; padding: 12px; font-size: 13.5px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-wa i { font-size: 19px; }
+  .team-member { background: #fff; border-radius: 18px; padding: 13px 15px; box-shadow: var(--shadow-soft); margin-bottom: 12px; display: flex; align-items: center; gap: 13px; }
+  .team-member .tm-photo { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--ing-blue-tint); }
+  .team-member .tm-info { flex: 1; min-width: 0; }
+  .team-member .tm-name { font-size: 14.5px; font-weight: 700; color: var(--ing-text); }
+  .team-member .tm-role { font-size: 11.5px; color: var(--ing-gold-deep); font-weight: 700; margin-top: 2px; }
+  .team-member .tm-wa { width: 46px; height: 46px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+  .team-member .tm-wa i { color: #fff; font-size: 22px; }
+
+  /* ===== APRENDE ===== */
+  .chips-row { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 2px; }
+  .chips-row::-webkit-scrollbar { display: none; }
+  .chip { background: var(--ing-white); color: var(--ing-muted); padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; box-shadow: var(--shadow-soft); }
+  .chip.active { background: var(--ing-navy); color: #fff; }
+
+  .learn-feature { border-radius: 24px; overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow-card); position: relative; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; background: linear-gradient(150deg, #2b5d86, #1B3A5C 70%); }
+  .learn-feature .lf-deco { position: absolute; inset: 0; opacity: .22; display: flex; align-items: center; justify-content: flex-end; }
+  .learn-feature .lf-deco i { font-size: 150px; color: #fff; margin-right: -20px; }
+  .learn-feature .lf-content { position: relative; padding: 18px 20px; }
+  .learn-feature .lf-tag { display: inline-block; background: var(--ing-gold); color: #fff; font-size: 10.5px; font-weight: 700; padding: 4px 11px; border-radius: 20px; margin-bottom: 9px; }
+  .learn-feature h2 { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 23px; font-weight: 600; line-height: 1.15; }
+  .learn-feature p { color: rgba(255,255,255,0.82); font-size: 12.5px; margin-top: 6px; line-height: 1.5; }
+
+  .learn-card { background: var(--ing-white); border-radius: 20px; overflow: hidden; margin-bottom: 14px; box-shadow: var(--shadow-soft); display: flex; }
+  .learn-thumb { width: 104px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .learn-thumb i { font-size: 40px; color: rgba(255,255,255,0.9); }
+  .learn-card .lc-body { padding: 13px 15px; flex: 1; min-width: 0; }
+  .learn-card .lc-tag { font-size: 10px; font-weight: 700; color: var(--ing-gold-deep); text-transform: uppercase; letter-spacing: .04em; }
+  .learn-card h3 { font-size: 14px; font-weight: 700; color: var(--ing-text); margin: 4px 0 5px; line-height: 1.25; }
+  .learn-card p { font-size: 11.5px; color: var(--ing-muted); line-height: 1.45; }
+  .learn-card .lc-foot { font-size: 10.5px; color: var(--ing-muted); margin-top: 7px; display: flex; align-items: center; gap: 5px; }
+  .learn-card { cursor: pointer; }
+  .learn-thumb img { width: 104px; height: 100%; object-fit: cover; display: block; }
+
+  /* photo avatar inside testimonial */
+  .testi .who .avatar.photo { background-size: cover; background-position: center; }
+
+  /* video testimonial card */
+  .video-card { border-radius: 20px; overflow: hidden; margin-bottom: 14px; box-shadow: var(--shadow-soft); background: var(--ing-white); cursor: pointer; }
+  .video-thumb { position: relative; height: 172px; background: #6a78c8 url('Im%C3%A1genes/Video%20Preview%2001.png') center/cover no-repeat; display: flex; flex-direction: column; justify-content: flex-end; padding: 14px 16px; overflow: hidden; }
+  .video-thumb::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(20,12,45,0.62) 0%, rgba(20,12,45,0.08) 45%, transparent 70%); }
+  .video-thumb .vt-play { position: absolute; top: 46%; left: 50%; transform: translate(-50%,-50%); width: 60px; height: 60px; border-radius: 50%; background: rgba(70,72,82,0.42); display: flex; align-items: center; justify-content: center; }
+  .video-thumb .vt-play::after { content: ''; width: 0; height: 0; border-style: solid; border-width: 13px 0 13px 22px; border-color: transparent transparent transparent rgba(255,255,255,0.82); margin-left: 5px; }
+  .video-thumb .vt-dur { position: absolute; bottom: 10px; right: 10px; background: rgba(13,33,56,0.78); color: #fff; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
+  .video-thumb .vt-title { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; line-height: 1.1; text-shadow: 0 2px 8px rgba(0,0,0,0.4); position: relative; }
+  .video-thumb .vt-sub { color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 700; margin-top: 4px; position: relative; text-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+  .video-card .vc-body { padding: 12px 15px; }
+  .video-card .vc-tag { font-size: 10px; font-weight: 700; color: var(--ing-gold-deep); text-transform: uppercase; letter-spacing: .04em; }
+  .video-card .vc-body h3 { font-size: 14px; font-weight: 700; color: var(--ing-text); margin: 4px 0 0; line-height: 1.25; }
+
+  /* testimonial */
+  .testi { background: linear-gradient(155deg, #fbf6ea, #fff); border-radius: 22px; padding: 18px 20px; margin-bottom: 14px; box-shadow: var(--shadow-soft); border: 1px solid var(--ing-gold-soft); }
+  .testi .quote { color: var(--ing-gold); font-size: 34px; font-family: 'Cormorant Garamond', serif; line-height: .6; }
+  .testi p { font-size: 13.5px; color: #41506a; line-height: 1.6; font-style: italic; margin: 6px 0 14px; }
+  .testi .who { display: flex; align-items: center; gap: 11px; }
+  .testi .who .nm { font-size: 12.5px; font-weight: 700; color: var(--ing-text); }
+  .testi .who .sb { font-size: 11px; color: var(--ing-muted); }
+
+  /* ===== CALENDARIO ===== */
+  .cal-card { background: var(--ing-white); border-radius: 22px; padding: 18px; box-shadow: var(--shadow-soft); margin-bottom: 16px; }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .cal-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; }
+  .cal-header .nav-btn { width: 32px; height: 32px; border-radius: 10px; background: var(--ing-blue-tint); display: flex; align-items: center; justify-content: center; color: var(--ing-navy); cursor: pointer; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 3px; }
+  .cal-day-name { font-size: 10px; color: var(--ing-muted); font-weight: 700; padding: 4px 0; }
+  .cal-day { font-size: 13px; padding: 8px 0; border-radius: 11px; cursor: pointer; position: relative; }
+  .cal-day.muted { color: var(--ing-border); }
+  .cal-day.today { background: var(--ing-navy); color: #fff; font-weight: 700; }
+  .cal-day.event { background: var(--ing-blue-soft); color: var(--ing-navy); font-weight: 700; }
+  .cal-day.event-gold { background: var(--ing-gold-soft); color: var(--ing-gold-deep); font-weight: 700; }
+  .cal-day.done { color: #0d8a63; font-weight: 700; }
+  .cal-day.done::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #0d8a63; }
+
+  .appt { display: flex; align-items: center; gap: 13px; padding: 14px 0; border-bottom: 1px solid var(--ing-border); }
+  .appt:last-child { border-bottom: none; }
+  .appt-date { width: 50px; flex-shrink: 0; text-align: center; background: var(--ing-blue-tint); border-radius: 13px; padding: 7px 0; }
+  .appt-date .d { font-size: 17px; font-weight: 700; color: var(--ing-navy); line-height: 1; }
+  .appt-date .m { font-size: 10px; color: var(--ing-muted); text-transform: uppercase; margin-top: 2px; }
+  .appt-date.past { background: #eef1f5; }
+  .appt-date.past .d { color: var(--ing-muted); }
+  .appt-info { flex: 1; min-width: 0; }
+  .appt-info .title { font-size: 13.5px; font-weight: 700; color: var(--ing-text); }
+  .appt-info .sub { font-size: 11.5px; color: var(--ing-muted); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+  .appt-info .sub i { font-size: 13px; }
+  .appt .status-pill { font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 20px; flex-shrink: 0; }
+  .status-pill.ok { background: #e3f3ec; color: #0d8a63; }
+  .status-pill.soon { background: var(--ing-gold-soft); color: var(--ing-gold-deep); }
+
+  /* ===== EQUIPO (GROUP CHAT) ===== */
+  #screen-equipo { background: var(--ing-bg); }
+  .chat-top { background: linear-gradient(160deg, var(--ing-navy) 0%, var(--ing-navy-deep) 100%); padding: 14px 18px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; }
+  .chat-top .group-av { display: flex; flex-shrink: 0; }
+  .chat-top .group-av .avatar { width: 36px; height: 36px; font-size: 12px; border: 2px solid var(--ing-navy-deep); margin-left: -10px; }
+  .chat-top .group-av .avatar:first-child { margin-left: 0; }
+  .chat-top .ci { flex: 1; min-width: 0; }
+  .chat-top .ci .cname { color: #fff; font-size: 15px; font-weight: 700; }
+  .chat-top .ci .cmembers { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .chat-area { flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .chat-area::-webkit-scrollbar { display: none; }
+  .day-sep { text-align: center; font-size: 10.5px; color: var(--ing-muted); margin: 8px 0; }
+  .day-sep span { background: rgba(27,58,92,0.07); padding: 4px 12px; border-radius: 20px; }
+
+  .msg { display: flex; gap: 9px; max-width: 86%; margin-top: 10px; }
+  .msg .m-av { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; align-self: flex-end; }
+  .msg .m-col { display: flex; flex-direction: column; }
+  .msg .m-sender { font-size: 11px; font-weight: 700; margin: 0 0 3px 4px; }
+  .msg .m-sender .r { font-weight: 400; color: var(--ing-muted); }
+  .bubble { padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.5; }
+  .msg.them .bubble { background: #fff; color: var(--ing-text); border-bottom-left-radius: 5px; box-shadow: var(--shadow-soft); }
+  .msg.me { align-self: flex-end; flex-direction: row-reverse; }
+  .msg.me .bubble { background: var(--ing-navy); color: #fff; border-bottom-right-radius: 5px; }
+  .bubble-time { font-size: 9.5px; color: var(--ing-muted); margin-top: 4px; }
+  .msg.me .bubble-time { text-align: right; margin-right: 4px; }
+  .msg.them .bubble-time { margin-left: 4px; }
+
+  /* sender colors */
+  .c-doc { background: var(--ing-navy); }
+  .c-nurse { background: var(--ing-gold); }
+  .s-doc { color: var(--ing-navy); }
+  .s-nurse { color: var(--ing-gold-deep); }
+
+  .chat-attach { background: #fff; border-radius: 16px; padding: 11px 13px; display: flex; align-items: center; gap: 11px; box-shadow: var(--shadow-soft); margin-top: 2px; cursor: pointer; }
+  .chat-attach .ci2 { width: 36px; height: 36px; border-radius: 11px; background: var(--ing-blue-tint); display: flex; align-items: center; justify-content: center; color: var(--ing-navy); font-size: 18px; flex-shrink: 0; }
+  .chat-attach .t { font-size: 12.5px; font-weight: 700; }
+  .chat-attach .s { font-size: 10.5px; color: var(--ing-muted); }
+
+  .chat-input-bar { background: #fff; padding: 11px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; box-shadow: 0 -4px 14px rgba(27,58,92,0.05); }
+  .chat-input { flex: 1; border: none; border-radius: 22px; padding: 11px 16px; font-size: 13px; outline: none; font-family: inherit; color: var(--ing-text); background: var(--ing-bg); }
+  .chat-send { background: var(--ing-navy); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .chat-send i { font-size: 17px; color: #fff; }
+  .chat-icon { color: var(--ing-muted); font-size: 21px; }
+
+  /* ===== MI PLAN ===== */
+  .treat-card { background: linear-gradient(150deg, var(--ing-gold) 0%, var(--ing-gold-deep) 100%); border-radius: 22px; padding: 18px 20px; box-shadow: var(--shadow-card); margin-bottom: 16px; }
+  .treat-card .tc-lbl { color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .treat-card .tc-title { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; margin: 4px 0; }
+  .treat-card .tc-sub { color: rgba(255,255,255,0.9); font-size: 12px; }
+  .treat-card .bar { margin-top: 13px; background: rgba(255,255,255,0.3); border-radius: 8px; height: 7px; overflow: hidden; }
+  .treat-card .bar > div { background: #fff; height: 100%; border-radius: 8px; }
+  .treat-card .tc-pct { color: #fff; font-size: 11px; margin-top: 6px; font-weight: 700; }
+
+  .plan-step { display: flex; gap: 13px; padding: 14px 2px; border-bottom: 1px solid var(--ing-border); }
+  .plan-step:last-child { border-bottom: none; }
+  .plan-step .ps-ico { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+  .ps-ico.done { background: #e3f3ec; color: #0d8a63; }
+  .ps-ico.curr { background: var(--ing-gold-soft); color: var(--ing-gold-deep); }
+  .ps-ico.todo { background: var(--ing-bg); color: var(--ing-muted); }
+  .ps-ico.num { background: var(--ing-gold-soft); color: var(--ing-gold-deep); font-weight: 700; font-size: 16px; }
+  .plan-step .ps-b { flex: 1; }
+  .plan-step .ps-b .t { font-size: 13.5px; font-weight: 700; color: var(--ing-text); }
+  .plan-step .ps-b .s { font-size: 11.5px; color: var(--ing-muted); margin-top: 2px; line-height: 1.45; }
+  .pay-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .pay-row .pl { font-size: 12.5px; color: var(--ing-muted); }
+  .pay-row .pv { font-size: 14px; font-weight: 700; color: var(--ing-text); }
+
+  /* ===== PERFIL ===== */
+  .profile-hero { background: linear-gradient(160deg, var(--ing-navy) 0%, var(--ing-navy-deep) 100%); padding: 26px 20px 30px; text-align: center; flex-shrink: 0; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px; position: relative; }
+  .profile-hero .back { position: absolute; top: 18px; left: 18px; width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .profile-hero .back i { color: #fff; font-size: 19px; }
+  .couple-av { display: flex; justify-content: center; margin-bottom: 12px; }
+  .couple-av .avatar { width: 64px; height: 64px; font-size: 20px; border: 3px solid var(--ing-navy-deep); }
+  .couple-av .avatar:nth-child(2) { margin-left: -18px; }
+  .profile-hero .pname { color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 23px; font-weight: 600; }
+  .profile-hero .pid { color: var(--ing-gold); font-size: 12px; margin-top: 4px; font-weight: 700; }
+
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-box { background: var(--ing-white); border-radius: 16px; padding: 14px 8px; text-align: center; box-shadow: var(--shadow-soft); }
+  .stat-box .sval { font-size: 20px; font-weight: 700; color: var(--ing-navy); font-family: 'Cormorant Garamond', serif; }
+  .stat-box .slabel { font-size: 10px; color: var(--ing-muted); margin-top: 3px; }
+
+  /* photo upload slots */
+  .photo-row { display: flex; gap: 12px; margin-bottom: 14px; }
+  .photo-slot { flex: 1; background: var(--ing-white); border-radius: 18px; padding: 16px 12px; text-align: center; box-shadow: var(--shadow-soft); }
+  .photo-slot .pa { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #fff; background-size: cover; background-position: center; position: relative; }
+  .photo-slot .pa .cam { position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: var(--ing-gold); border: 2px solid #fff; display: flex; align-items: center; justify-content: center; }
+  .photo-slot .pa .cam i { font-size: 12px; color: #fff; }
+  .photo-slot .pn { font-size: 13px; font-weight: 700; color: var(--ing-text); }
+  .photo-slot .pup { font-size: 11px; color: var(--ing-gold-deep); font-weight: 700; margin-top: 4px; cursor: pointer; }
+
+  /* editable data fields (Mi perfil) */
+  .data-field { display: flex; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--ing-border); }
+  .data-field:last-child { border-bottom: none; }
+  .data-field .df-main { flex: 1; min-width: 0; }
+  .data-field .df-label { font-size: 10.5px; font-weight: 700; color: var(--ing-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .data-field .df-input { width: 100%; border: none; background: none; font-family: inherit; font-size: 14.5px; color: var(--ing-text); font-weight: 700; padding: 4px 0 0; outline: none; }
+  .data-field .df-input:focus { color: var(--ing-navy); }
+  .data-field .df-edit { color: var(--ing-gold-deep); font-size: 18px; cursor: pointer; flex-shrink: 0; }
+
+  .menu-card { background: var(--ing-white); border-radius: 20px; padding: 4px 16px; box-shadow: var(--shadow-soft); margin-bottom: 14px; }
+  .menu-item { display: flex; align-items: center; gap: 13px; padding: 14px 0; border-bottom: 1px solid var(--ing-border); cursor: pointer; }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item .mi { width: 38px; height: 38px; border-radius: 12px; background: var(--ing-blue-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .menu-item .mi i { font-size: 19px; color: var(--ing-navy); }
+  .menu-item .mlabel { font-size: 14px; color: var(--ing-text); flex: 1; font-weight: 700; }
+  .menu-item .mchev { font-size: 18px; color: var(--ing-muted); }
+
+  /* ===== DOCUMENTOS ===== */
+  .doc-item { display: flex; align-items: center; gap: 13px; padding: 14px 0; border-bottom: 1px solid var(--ing-border); }
+  .doc-item:last-child { border-bottom: none; }
+  .doc-item .di { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .doc-item .di i { font-size: 20px; color: #fff; }
+  .doc-item .dt { flex: 1; min-width: 0; }
+  .doc-item .dt .t { font-size: 13.5px; font-weight: 700; color: var(--ing-text); }
+  .doc-item .dt .s { font-size: 11px; color: var(--ing-muted); margin-top: 2px; }
+  .doc-item .dl { font-size: 20px; color: var(--ing-gold-deep); }
+  .doc-item.pending .dt .t { color: var(--ing-muted); }
+
+  /* ===== CONFIGURACIÓN ===== */
+  .cfg-item { display: flex; align-items: center; gap: 13px; padding: 15px 0; border-bottom: 1px solid var(--ing-border); }
+  .cfg-item:last-child { border-bottom: none; }
+  .cfg-item .ci3 { width: 38px; height: 38px; border-radius: 12px; background: var(--ing-blue-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cfg-item .ci3 i { font-size: 19px; color: var(--ing-navy); }
+  .cfg-item .cl { flex: 1; font-size: 14px; font-weight: 700; color: var(--ing-text); }
+  .cfg-item .cl .cs { font-size: 11px; font-weight: 400; color: var(--ing-muted); margin-top: 2px; }
+  .cfg-item .mchev { font-size: 18px; color: var(--ing-muted); }
+  .toggle { width: 44px; height: 25px; border-radius: 14px; background: var(--ing-border); position: relative; cursor: pointer; flex-shrink: 0; transition: background .2s; }
+  .toggle.on { background: var(--ing-blue); }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; border-radius: 50%; background: #fff; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle.on::after { left: 21px; }
+
+  /* ===== BOTTOM NAV ===== */
+  .bottom-nav {
+    background: var(--ing-white);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 9px 6px 14px; flex-shrink: 0;
+    box-shadow: 0 -6px 22px rgba(27,58,92,0.07);
+    position: relative; z-index: 5;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; padding: 7px 10px; border-radius: 16px;
+    border: none; background: none; transition: all .18s ease; position: relative;
+  }
+  .nav-item .ni-wrap { position: relative; display: flex; }
+  .nav-item i { font-size: 23px; color: var(--ing-muted); transition: color .18s; }
+  .nav-item span { font-size: 9.5px; color: var(--ing-muted); font-weight: 700; }
+  .nav-item.active { background: var(--ing-blue-tint); }
+  .nav-item.active i { color: var(--ing-navy); }
+  .nav-item.active span { color: var(--ing-navy); }
+  .nav-item.active::before { content: ''; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); width: 22px; height: 3px; border-radius: 3px; background: var(--ing-gold); }
+  .nav-item .nb { position: absolute; top: -6px; right: -9px; }
+  /* locked nav items: visible but disabled */
+  .nav-item.locked { cursor: default; }
+  .nav-item.locked i, .nav-item.locked span { color: #c2cbd9; }
+  .nav-item.locked::before { display: none !important; }
+  .nav-item .lock { position: absolute; top: -7px; right: -11px; font-size: 10px; color: #9aa6b6; background: var(--ing-white); border-radius: 50%; padding: 1px; line-height: 1; }
+
+  /* ===== TOP AVATAR (couple) ===== */
+  .hdr-av { display: flex; cursor: pointer; flex-shrink: 0; }
+  .hdr-av .av { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff; background-size: cover; background-position: center; }
+  .hdr-av .av:nth-child(2) { margin-left: -14px; }
+  .p-a { background: var(--ing-gold); }
+  .p-b { background: var(--ing-blue); }
+
+  /* ===== AUTH / LOGIN ===== */
+  #auth-screen { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: linear-gradient(170deg, var(--ing-navy) 0%, var(--ing-navy-deep) 58%, #0d2138 100%); }
+  #auth-screen::-webkit-scrollbar { display: none; }
+  .auth-inner { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 30px 26px; min-height: 0; }
+  .auth-logo { text-align: center; margin-bottom: 30px; }
+  .auth-logo .mark { width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+  .auth-logo .mark img { width: 72px; height: 72px; object-fit: contain; }
+  .auth-logo .brand { font-family: 'Cormorant Garamond', serif; color: #fff; font-size: 30px; font-weight: 600; letter-spacing: .04em; }
+  .auth-logo .tagline { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 2px; }
+  .auth-card { background: #fff; border-radius: 26px; padding: 24px 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+  .auth-card h2 { font-family: 'Cormorant Garamond', serif; font-size: 23px; color: var(--ing-text); font-weight: 600; }
+  .auth-card p.sub { font-size: 13px; color: var(--ing-muted); margin-top: 6px; line-height: 1.5; }
+  .auth-card p.sub b { color: var(--ing-text); }
+  .field { margin-top: 18px; }
+  .field label { font-size: 11px; font-weight: 700; color: var(--ing-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .field .inp { width: 100%; margin-top: 7px; border: 1.5px solid var(--ing-border); border-radius: 14px; padding: 13px 14px; font-size: 14px; font-family: inherit; color: var(--ing-text); outline: none; background: var(--ing-bg); }
+  .field .inp:focus { border-color: var(--ing-blue); background: #fff; }
+  .btn-cta { width: 100%; margin-top: 20px; background: var(--ing-navy); color: #fff; border: none; border-radius: 14px; padding: 14px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .auth-hint { margin-top: 22px; background: rgba(255,255,255,0.07); border: 1px dashed rgba(255,255,255,0.18); border-radius: 14px; padding: 12px 14px; }
+  .auth-hint .ht { color: var(--ing-gold); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 7px; }
+  .auth-hint .he { color: rgba(255,255,255,0.82); font-size: 11.5px; line-height: 1.45; cursor: pointer; padding: 4px 0; }
+  .auth-hint .he b { color: #fff; }
+  .code-row { display: flex; gap: 8px; margin-top: 16px; justify-content: space-between; }
+  .code-box { width: 100%; aspect-ratio: 1 / 1.15; border: 1.5px solid var(--ing-border); border-radius: 13px; text-align: center; font-size: 22px; font-weight: 700; color: var(--ing-navy); outline: none; background: var(--ing-bg); font-family: inherit; }
+  .code-box:focus { border-color: var(--ing-blue); background: #fff; }
+  .mail-illu { width: 58px; height: 58px; border-radius: 18px; background: var(--ing-blue-tint); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+  .mail-illu i { font-size: 28px; color: var(--ing-navy); }
+  .auth-link { color: var(--ing-gold-deep); font-weight: 700; cursor: pointer; text-decoration: none; }
+  .auth-muted-link { color: var(--ing-muted); cursor: pointer; }
+
+  /* ===== AVATAR MENU OVERLAY ===== */
+  .menu-overlay { position: absolute; inset: 0; background: rgba(13,33,56,0.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+  .menu-overlay.open { opacity: 1; pointer-events: auto; }
+  .avatar-sheet { position: absolute; top: 0; right: 0; left: 0; background: #fff; border-bottom-left-radius: 26px; border-bottom-right-radius: 26px; padding: 16px 18px 20px; transform: translateY(-100%); transition: transform .26s cubic-bezier(.3,.8,.3,1); box-shadow: 0 16px 40px rgba(13,33,56,0.3); }
+  .menu-overlay.open .avatar-sheet { transform: translateY(0); }
+  .sheet-grip { width: 36px; height: 4px; border-radius: 4px; background: var(--ing-border); margin: 0 auto 12px; }
+  .sheet-head { display: flex; align-items: center; gap: 13px; padding: 0 4px 16px; border-bottom: 1px solid var(--ing-border); }
+  .sheet-head .couple { display: flex; }
+  .sheet-head .couple .av { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; background-size: cover; background-position: center; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+  .sheet-head .couple .av:nth-child(2) { margin-left: -16px; }
+  .sheet-head .nm { font-size: 15px; font-weight: 700; color: var(--ing-text); }
+  .sheet-head .sb { font-size: 11.5px; color: var(--ing-muted); margin-top: 2px; }
+  .sheet-item { display: flex; align-items: center; gap: 13px; padding: 14px 4px; border-bottom: 1px solid var(--ing-border); cursor: pointer; }
+  .sheet-item:last-child { border-bottom: none; }
+  .sheet-item .si { width: 38px; height: 38px; border-radius: 12px; background: var(--ing-blue-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sheet-item .si i { font-size: 19px; color: var(--ing-navy); }
+  .sheet-item .sl { flex: 1; font-size: 14px; font-weight: 700; color: var(--ing-text); }
+  .sheet-item .schev { font-size: 18px; color: var(--ing-muted); }
+  .sheet-item.logout .si { background: #fdeaea; }
+  .sheet-item.logout .si i { color: #c0392b; }
+  .sheet-item.logout .sl { color: #c0392b; }
+
+  /* ===== TOAST ===== */
+  .toast { position: absolute; left: 50%; bottom: 92px; transform: translateX(-50%) translateY(12px); background: var(--ing-navy); color: #fff; font-size: 12.5px; font-weight: 700; padding: 11px 18px; border-radius: 14px; box-shadow: 0 10px 26px rgba(13,33,56,0.35); opacity: 0; pointer-events: none; transition: all .25s; z-index: 50; max-width: 80%; text-align: center; display: flex; align-items: center; gap: 8px; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast i { color: var(--ing-gold); font-size: 16px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="dots">●●●&nbsp;&nbsp;<i class="ti ti-wifi" style="font-size:13px;vertical-align:-1px;"></i>&nbsp;<i class="ti ti-battery-3" style="font-size:14px;vertical-align:-2px;"></i></span>
+    <span>100%</span>
+  </div>
+
+  <!-- ============ LOGIN / AUTH ============ -->
+  <div id="auth-screen">
+    <div class="auth-inner">
+      <div class="auth-logo">
+        <div class="mark"><img src="ING_Isotipo_Blanco%20.png" alt="Ingenes"/></div>
+        <div class="brand">Ingenes</div>
+        <div class="tagline">Te acompañamos en cada paso</div>
+      </div>
+
+      <!-- Step 1: email -->
+      <div id="step-email">
+        <div class="auth-card">
+          <h2>¡Hola!</h2>
+          <p class="sub">Ingresa tu correo electrónico para acceder o crear tu cuenta. Te enviaremos un enlace y un código para confirmarlo.</p>
+          <div class="field">
+            <label>Correo electrónico</label>
+            <input class="inp" id="email-input" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="email"/>
+          </div>
+          <button class="btn-cta" onclick="submitEmail()"><i class="ti ti-mail"></i> Continuar</button>
+        </div>
+        <div class="auth-hint">
+          <div class="ht">Correos de demostración · toca para usar</div>
+          <div class="he" onclick="fillEmail('no_ha_agendado@test.com')">· <b>no_ha_agendado@test.com</b> — aún sin agendar</div>
+          <div class="he" onclick="fillEmail('ya_agendo@test.com')">· <b>ya_agendo@test.com</b> — ya agendó su 1ª cita</div>
+          <div class="he" onclick="fillEmail('ya_primera@test.com')">· <b>ya_primera@test.com</b> — ya fue a su 1ª cita</div>
+          <div class="he" onclick="fillEmail('ya_primera_lgbt@test.com')">· <b>ya_primera_lgbt@test.com</b> — ya fue a su 1ª cita · LGBT</div>
+        </div>
+      </div>
+
+      <!-- Step 2: code -->
+      <div id="step-code" class="hidden">
+        <div class="auth-card" style="text-align:center;">
+          <div class="mail-illu"><i class="ti ti-mail-opened"></i></div>
+          <h2>Revisa tu correo</h2>
+          <p class="sub">Enviamos un enlace de confirmación y un código de 4 dígitos a <b id="code-email">tu correo</b>. Ingresa el código para continuar.</p>
+          <div class="code-row">
+            <input class="code-box" maxlength="1" inputmode="numeric"/>
+            <input class="code-box" maxlength="1" inputmode="numeric"/>
+            <input class="code-box" maxlength="1" inputmode="numeric"/>
+            <input class="code-box" maxlength="1" inputmode="numeric"/>
+          </div>
+          <button class="btn-cta" onclick="confirmCode()">Continuar</button>
+          <div style="margin-top:14px;font-size:12px;color:var(--ing-muted);">¿No te llegó? <a class="auth-link" onclick="toast('Código reenviado (simulado)','ti-send')">Reenviar código</a></div>
+          <div style="margin-top:9px;font-size:12px;"><a class="auth-muted-link" onclick="backToEmail()">Usar otro correo</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="app" class="hidden">
+
+  <!-- ============ INICIO ============ -->
+  <div class="screen active" id="screen-inicio">
+    <div class="top-bar">
+      <div class="row">
+        <div>
+          <div class="greeting">Buenos días,</div>
+          <div class="name" id="hdr-name">Valeria &amp; Camila</div>
+          <div class="subtitle" id="hdr-subtitle">PROGRAMA ROPA · INGENES CDMX SUR</div>
+        </div>
+        <div class="h-actions">
+          <div class="hdr-av" onclick="openMenu()">
+            <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
+            <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-area">
+
+      <!-- ===================== STAGE 0 · no_ha_agendado ===================== -->
+      <div id="inicio-stage0" style="display:none;">
+
+        <!-- Journey: aún no agenda, primer paso = Agenda -->
+        <div class="journey-card">
+          <div class="jc-label">Tu camino en Ingenes</div>
+          <div class="jc-title">Primer paso: agenda tu cita</div>
+          <div class="steps six">
+            <div class="step current">
+              <div class="dot"><i class="ti ti-calendar-plus"></i></div>
+              <div class="lbl">Agenda</div>
+            </div>
+            <div class="step">
+              <div class="dot"><i class="ti ti-stethoscope"></i></div>
+              <div class="lbl">Primera<br>consulta</div>
+            </div>
+            <div class="step">
+              <div class="dot"><i class="ti ti-microscope"></i></div>
+              <div class="lbl">Estudios y<br>diagnóstico</div>
+            </div>
+            <div class="step">
+              <div class="dot"><i class="ti ti-clipboard-heart"></i></div>
+              <div class="lbl">Plan de<br>tratamiento</div>
+            </div>
+            <div class="step">
+              <div class="dot"><i class="ti ti-vaccine"></i></div>
+              <div class="lbl">Tratamiento</div>
+            </div>
+            <div class="step">
+              <div class="dot"><i class="ti ti-baby-carriage"></i></div>
+              <div class="lbl">Embarazo</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Actualizaciones de tu proceso</div>
+
+        <!-- Mensaje de Ingenes + CTA (fusionados) -->
+        <div class="update pinned">
+          <div class="u-head">
+            <div class="avatar navy">IG</div>
+            <div class="u-meta">
+              <div class="sender">Ingenes Contigo</div>
+            </div>
+            <div class="u-meta" style="margin-left:auto;text-align:right;">
+              <div class="time">Hoy</div>
+            </div>
+          </div>
+          <div class="u-body">Te invitamos a agendar tu <b>Primera Consulta</b>, donde recibirás un diagnóstico de fertilidad elaborado por nuestro equipo médico.</div>
+          <div class="u-actions">
+            <button class="btn-primary" onclick="toast('Abriendo agenda de tu Primera Consulta…','ti-calendar-plus')"><i class="ti ti-calendar-plus"></i> Agendar primera consulta</button>
+          </div>
+        </div>
+
+        <!-- What the first visit includes -->
+        <div class="card">
+          <div class="section-title" style="margin:2px 0 8px;">Tu primera consulta incluye</div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Asesoría médica online sin costo para conocer tu caso</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Consulta presencial con un médico especialista en fertilidad</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Estudios necesarios para tu diagnóstico, el mismo día</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Evaluación completa de tu salud reproductiva</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Plan de tratamiento personalizado a tu medida</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Asesoría financiera y planes de pago</span></div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== STAGE 1 · ya_agendo (pareja heterosexual, Monterrey) ===================== -->
+      <div id="inicio-stage1" style="display:none;">
+
+        <!-- Journey: Agenda completada, sigue Primera consulta -->
+        <div class="journey-card">
+          <div class="jc-label">Tu camino en Ingenes</div>
+          <div class="jc-title">Tu siguiente paso: Primera consulta</div>
+          <div class="steps six">
+            <div class="step done"><div class="dot"><i class="ti ti-check"></i></div><div class="lbl">Agenda</div></div>
+            <div class="step current"><div class="dot"><i class="ti ti-stethoscope"></i></div><div class="lbl">Primera<br>consulta</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-microscope"></i></div><div class="lbl">Estudios y<br>diagnóstico</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-clipboard-heart"></i></div><div class="lbl">Plan de<br>tratamiento</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-vaccine"></i></div><div class="lbl">Tratamiento</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-baby-carriage"></i></div><div class="lbl">Embarazo</div></div>
+          </div>
+        </div>
+
+        <div class="section-title">Actualizaciones de tu proceso</div>
+
+        <!-- Detalles de la primera consulta agendada -->
+        <div class="update pinned">
+          <div class="u-head">
+            <div class="avatar navy">IG</div>
+            <div class="u-meta"><div class="sender">Ingenes Contigo</div></div>
+            <div class="u-meta" style="margin-left:auto;text-align:right;"><div class="time">Hoy</div></div>
+          </div>
+          <div class="u-body">¡Gracias por agendar su Primera Consulta! Será un gusto recibirlos. Estos son los detalles de tu primera consulta:</div>
+          <div class="appt-card">
+            <span class="modality presencial"><i class="ti ti-building-hospital"></i> Cita presencial</span>
+            <div class="ad-row"><i class="ti ti-calendar-event"></i> Jueves 23 de julio, 2026</div>
+            <div class="ad-row"><i class="ti ti-clock"></i> 13:30 hrs</div>
+            <div class="ad-row"><i class="ti ti-building"></i> <span>Sucursal Monterrey<br><a onclick="window.open('https://www.google.com/maps/search/Ingenes+Monterrey','_blank')"><i class="ti ti-map-pin" style="font-size:13px;"></i> Abrir en Google Maps</a></span></div>
+          </div>
+          <div class="contact-legend">Contáctanos si tienes dudas antes de tu primera consulta</div>
+          <div class="u-actions">
+            <button class="btn-primary" onclick="toast('Abriendo WhatsApp…','ti-brand-whatsapp')"><i class="ti ti-brand-whatsapp"></i> Contáctanos</button>
+          </div>
+        </div>
+
+        <!-- Estado de la primera consulta (pendiente) -->
+        <div class="update">
+          <div class="done-row">
+            <div class="done-icon" style="background:var(--ing-gold-soft);"><i class="ti ti-calendar-clock" style="color:var(--ing-gold-deep);"></i></div>
+            <div style="flex:1;">
+              <div class="sender" style="font-size:14px;">Primera consulta presencial · Monterrey</div>
+              <div class="time" style="font-size:11.5px;color:var(--ing-muted);margin-top:3px;">23 jul, 2026 · Dr. Enrique Rodríguez</div>
+            </div>
+            <span class="status-pill soon">Pendiente</span>
+          </div>
+        </div>
+
+        <!-- Bienvenida -->
+        <div class="update">
+          <div class="u-head">
+            <div class="avatar navy">IG</div>
+            <div class="u-meta"><div class="sender">Ingenes Contigo</div></div>
+            <div class="u-meta" style="margin-left:auto;text-align:right;"><div class="time">1 jun</div></div>
+          </div>
+          <span class="u-tag green"><i class="ti ti-heart-handshake" style="font-size:12px;"></i> Bienvenidos</span>
+          <div class="u-body">¡Bienvenidos a Ingenes! Acompañaremos cada paso de su camino hacia la maternidad. Aquí verán todas las actualizaciones de su proceso y podrán contactar a su equipo cuando lo necesiten.</div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== S2 · ya_primera (het · ya fue a su 1ª consulta) ===================== -->
+      <div id="inicio-s2" style="display:none;">
+
+        <!-- Journey: Agenda y Primera consulta hechas, sigue Estudios y diagnóstico -->
+        <div class="journey-card">
+          <div class="jc-label">Tu camino en Ingenes</div>
+          <div class="jc-title">Estás en: Tratamiento</div>
+          <div class="steps six">
+            <div class="step done"><div class="dot"><i class="ti ti-check"></i></div><div class="lbl">Agenda</div></div>
+            <div class="step done"><div class="dot"><i class="ti ti-check"></i></div><div class="lbl">Primera<br>consulta</div></div>
+            <div class="step done"><div class="dot"><i class="ti ti-check"></i></div><div class="lbl">Estudios y<br>diagnóstico</div></div>
+            <div class="step done"><div class="dot"><i class="ti ti-check"></i></div><div class="lbl">Plan de<br>tratamiento</div></div>
+            <div class="step current"><div class="dot"><i class="ti ti-vaccine"></i></div><div class="lbl">Tratamiento</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-baby-carriage"></i></div><div class="lbl">Embarazo</div></div>
+          </div>
+        </div>
+
+        <div class="section-title">Actualizaciones de tu proceso</div>
+
+        <!-- Estudios completados + siguiente paso (inicio de tratamiento) -->
+        <div class="update pinned">
+          <div class="u-head">
+            <div class="avatar navy">IG</div>
+            <div class="u-meta"><div class="sender">Ingenes Contigo</div></div>
+            <div class="u-meta" style="margin-left:auto;text-align:right;"><div class="time">Hoy</div></div>
+          </div>
+          <div class="u-body">¡Ya completaron sus estudios! Cuentan con su <b>diagnóstico</b>, su <b>propuesta</b> y su <b>plan de tratamiento</b> en Documentos. El siguiente paso es iniciar tu <b>estimulación ovárica</b> el 30 de julio.</div>
+          <div class="u-actions">
+            <button class="btn-primary" onclick="showScreen('miplan')"><i class="ti ti-clipboard-heart"></i> Ver mi plan de tratamiento</button>
+          </div>
+        </div>
+
+        <!-- Estudios completados -->
+        <div class="update">
+          <div class="done-row">
+            <div class="done-icon"><i class="ti ti-circle-check"></i></div>
+            <div style="flex:1;">
+              <div class="sender" style="font-size:14px;">Estudios y perfil hormonal · Monterrey</div>
+              <div class="time" style="font-size:11.5px;color:var(--ing-muted);margin-top:3px;">25 jul, 2026 · Laboratorio Ingenes</div>
+            </div>
+            <span class="status-pill ok">Hecha</span>
+          </div>
+        </div>
+
+        <!-- Primera consulta completada -->
+        <div class="update">
+          <div class="done-row">
+            <div class="done-icon"><i class="ti ti-circle-check"></i></div>
+            <div style="flex:1;">
+              <div class="sender" style="font-size:14px;">Primera consulta presencial · Monterrey</div>
+              <div class="time" style="font-size:11.5px;color:var(--ing-muted);margin-top:3px;">23 jul, 2026 · Dr. Enrique Rodríguez</div>
+            </div>
+            <span class="status-pill ok">Hecha</span>
+          </div>
+        </div>
+
+        <!-- Bienvenida -->
+        <div class="update">
+          <div class="u-head">
+            <div class="avatar navy">IG</div>
+            <div class="u-meta"><div class="sender">Ingenes Contigo</div></div>
+            <div class="u-meta" style="margin-left:auto;text-align:right;"><div class="time">1 jun</div></div>
+          </div>
+          <span class="u-tag green"><i class="ti ti-heart-handshake" style="font-size:12px;"></i> Bienvenidos</span>
+          <div class="u-body">¡Bienvenidos a Ingenes! Acompañaremos cada paso de su camino hacia la maternidad. Aquí verán todas las actualizaciones de su proceso y podrán contactar a su equipo cuando lo necesiten.</div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== DEFAULT · pareja de mujeres (ya_primera_lgbt) ===================== -->
+      <div id="inicio-default">
+
+      <!-- Journey progress -->
+      <div class="journey-card">
+        <div class="jc-label">Tu camino en Ingenes</div>
+        <div class="jc-title">Estás en: Estudios y diagnóstico</div>
+        <div class="steps six">
+          <div class="step done">
+            <div class="dot"><i class="ti ti-check"></i></div>
+            <div class="lbl">Agenda</div>
+          </div>
+          <div class="step done">
+            <div class="dot"><i class="ti ti-check"></i></div>
+            <div class="lbl">Primera<br>consulta</div>
+          </div>
+          <div class="step current">
+            <div class="dot"><i class="ti ti-microscope"></i></div>
+            <div class="lbl">Estudios y<br>diagnóstico</div>
+          </div>
+          <div class="step">
+            <div class="dot"><i class="ti ti-clipboard-heart"></i></div>
+            <div class="lbl">Plan de<br>tratamiento</div>
+          </div>
+          <div class="step">
+            <div class="dot"><i class="ti ti-vaccine"></i></div>
+            <div class="lbl">Tratamiento</div>
+          </div>
+          <div class="step">
+            <div class="dot"><i class="ti ti-baby-carriage"></i></div>
+            <div class="lbl">Embarazo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Actualizaciones de tu proceso</div>
+
+      <!-- Most recent update: first online visit thank you -->
+      <div class="update pinned">
+        <div class="u-head">
+          <div class="avatar gold">ME</div>
+          <div class="u-meta">
+            <div class="sender">Mariana Estrada</div>
+            <div class="role">PBB · Asesora</div>
+          </div>
+          <div class="u-meta" style="margin-left:auto;text-align:right;">
+            <div class="time">Hoy · 9:05</div>
+          </div>
+        </div>
+        <span class="u-tag gold"><i class="ti ti-sparkles" style="font-size:12px;"></i> Tu journey</span>
+        <div class="u-body">Gracias por asistir a tu primera consulta online. Quedamos a la espera de que puedas agendar la próxima, para que podamos realizarte estudios y validar tu diagnóstico.</div>
+        <div class="u-actions">
+          <button class="btn-primary" onclick="go('calendario')"><i class="ti ti-calendar-plus"></i> Agendar próxima cita</button>
+        </div>
+      </div>
+
+      <!-- Completed appointment marker -->
+      <div class="update">
+        <div class="done-row">
+          <div class="done-icon"><i class="ti ti-circle-check"></i></div>
+          <div style="flex:1;">
+            <div class="sender" style="font-size:14px;">Primera consulta online · completada</div>
+            <div class="time" style="font-size:11.5px;color:var(--ing-muted);margin-top:3px;">3 jun, 2026 · Dr. Ricardo Funes</div>
+          </div>
+          <span class="status-pill ok">Hecha</span>
+        </div>
+      </div>
+
+      <!-- Earlier update: economic proposal -->
+      <div class="update">
+        <div class="u-head">
+          <div class="avatar gold">ME</div>
+          <div class="u-meta">
+            <div class="sender">Mariana Estrada</div>
+            <div class="role">PBB · Asesora</div>
+          </div>
+          <div class="u-meta" style="margin-left:auto;text-align:right;">
+            <div class="time">2 jun · 17:20</div>
+          </div>
+        </div>
+        <span class="u-tag"><i class="ti ti-file-dollar" style="font-size:12px;"></i> Propuesta</span>
+        <div class="u-body">Aquí está la propuesta económica para que puedas evaluar los diferentes tipos de tratamientos que podemos ofrecerte, tiempos y costos. Quedo a tu disposición para lo que necesites.</div>
+        <div class="attach">
+          <div class="ai"><i class="ti ti-file-text"></i></div>
+          <div class="at">
+            <div class="t">Propuesta económica · ROPA</div>
+            <div class="s">PDF · 4 págs · 1.2 MB</div>
+          </div>
+          <i class="ti ti-chevron-right chev"></i>
+        </div>
+        <div class="u-actions">
+          <button class="btn-primary"><i class="ti ti-eye"></i> Ver propuesta</button>
+          <button class="btn-ghost" onclick="go('equipo')">Tengo dudas</button>
+        </div>
+      </div>
+
+      <!-- Welcome update -->
+      <div class="update">
+        <div class="u-head">
+          <div class="avatar navy">IG</div>
+          <div class="u-meta">
+            <div class="sender">Ingenes Contigo</div>
+            <div class="role" style="color:var(--ing-muted);">Bienvenida</div>
+          </div>
+          <div class="u-meta" style="margin-left:auto;text-align:right;">
+            <div class="time">1 jun</div>
+          </div>
+        </div>
+        <span class="u-tag green"><i class="ti ti-heart-handshake" style="font-size:12px;"></i> Bienvenida</span>
+        <div class="u-body">¡Bienvenidas a Ingenes! Acompañaremos cada paso de su camino hacia la maternidad. Aquí verán todas las actualizaciones de su proceso y podrán contactar a su equipo cuando lo necesiten.</div>
+      </div>
+
+      </div><!-- /#inicio-default -->
+
+      <div style="height:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ APRENDE ============ -->
+  <div class="screen" id="screen-aprende">
+    <div class="top-bar-simple">
+      <div class="h-left"><h1>Aprende de Fertilidad</h1></div>
+      <div class="hdr-av" onclick="openMenu()">
+        <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
+        <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
+      </div>
+    </div>
+    <div class="scroll-area">
+
+      <!-- ===================== STAGE 0 · contenido genérico ===================== -->
+      <div id="aprende-stage0" style="display:none;">
+        <div class="chips-row">
+          <div class="chip active">Para ti</div>
+          <div class="chip">Conoce Ingenes</div>
+          <div class="chip">Fertilidad</div>
+          <div class="chip">Nutrición</div>
+          <div class="chip">Testimonios</div>
+        </div>
+
+        <!-- Featured: Por qué Ingenes -->
+        <div class="learn-feature">
+          <div class="lf-deco"><i class="ti ti-award"></i></div>
+          <div class="lf-content">
+            <span class="lf-tag">POR QUÉ INGENES</span>
+            <h2>Tu mejor opción para lograrlo</h2>
+            <p>Combinamos ciencia, experiencia y trato humano: la tasa de éxito #1 en Latinoamérica en FIV con óvulos propios, un tratamiento personalizado a tu historia y un equipo de expertos dedicado 100% a ti.</p>
+          </div>
+        </div>
+
+        <!-- Testimonial: Itzel & Armando -->
+        <div class="section-title">Historias reales</div>
+        <div class="testi">
+          <div class="quote">"</div>
+          <p>Después de dos años intentando tener un bebé, con varias pérdidas en el camino, Yareth llegó y transformó nuestras vidas. Nunca pierdas la fe, confía en los especialistas y mantén la esperanza.</p>
+          <div class="who">
+            <div class="avatar soft photo" style="background-image:url('Im%C3%A1genes/itzel-y-armando.webp');"></div>
+            <div>
+              <div class="nm">Itzel &amp; Armando</div>
+              <div class="sb">Papás Ingenes · Guadalajara</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video testimonial: Adriana y Jaime -->
+        <div class="video-card" onclick="toast('Reproduciendo video testimonial…','ti-player-play')">
+          <div class="video-thumb">
+            <div class="vt-play"></div>
+            <div class="vt-dur">4:10</div>
+            <div class="vt-title">"La FIV era nuestra última esperanza"</div>
+            <div class="vt-sub">Adriana y Jaime, padres Ingenes</div>
+          </div>
+          <div class="vc-body">
+            <div class="vc-tag">Video testimonio</div>
+            <h3>La historia de Adriana y Jaime</h3>
+          </div>
+        </div>
+
+        <div class="section-title">Aprende más</div>
+
+        <div class="learn-card" onclick="window.open('https://www.ingenes.com/fertilidad/la-edad-un-factor-clave-de-la-fertilidad/','_blank')">
+          <div class="learn-thumb"><img src="https://www.ingenes.com/images/blog/la_edad_un_factor_clave_de_la_fertilidad_01.jpg" alt=""/></div>
+          <div class="lc-body">
+            <div class="lc-tag">Fertilidad</div>
+            <h3>La edad: un factor clave de la fertilidad</h3>
+            <p>Cómo influye la edad en la cantidad y calidad de tus óvulos.</p>
+            <div class="lc-foot"><i class="ti ti-external-link"></i> Leer en el blog</div>
+          </div>
+        </div>
+
+        <div class="learn-card" onclick="window.open('https://www.ingenes.com/fertilidad/nutricion-y-fertilidad-el-impacto-real-de-tu-alimentacion-al-buscar-un-bebe/','_blank')">
+          <div class="learn-thumb"><img src="https://www.ingenes.com/images/blog/48395.jpg" alt=""/></div>
+          <div class="lc-body">
+            <div class="lc-tag">Nutrición</div>
+            <h3>Nutrición y fertilidad</h3>
+            <p>El impacto real de tu alimentación al buscar un bebé.</p>
+            <div class="lc-foot"><i class="ti ti-external-link"></i> Leer en el blog</div>
+          </div>
+        </div>
+
+        <div class="learn-card" onclick="window.open('https://www.ingenes.com/reproduccion-asistida/mas-alla-de-la-fiv-como-ha-evolucionado-la-reproduccion-asistida-en-los-ultimos-anos/','_blank')">
+          <div class="learn-thumb"><img src="https://www.ingenes.com/images/blog/48320.jpg" alt=""/></div>
+          <div class="lc-body">
+            <div class="lc-tag">Reproducción asistida</div>
+            <h3>Más allá de la FIV</h3>
+            <p>Cómo ha evolucionado la reproducción asistida en los últimos años.</p>
+            <div class="lc-foot"><i class="ti ti-external-link"></i> Leer en el blog</div>
+          </div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== STAGE 1 · ya_agendo (genérico + otras notas) ===================== -->
+      <div id="aprende-stage1" style="display:none;">
+        <div class="chips-row">
+          <div class="chip active">Para ustedes</div>
+          <div class="chip">Conoce Ingenes</div>
+          <div class="chip">Fertilidad</div>
+          <div class="chip">Testimonios</div>
+          <div class="chip">FIV</div>
+        </div>
+
+        <!-- Featured: Por qué Ingenes -->
+        <div class="learn-feature">
+          <div class="lf-deco"><i class="ti ti-award"></i></div>
+          <div class="lf-content">
+            <span class="lf-tag">POR QUÉ INGENES</span>
+            <h2>Tu mejor opción para lograrlo</h2>
+            <p>Combinamos ciencia, experiencia y trato humano: la tasa de éxito #1 en Latinoamérica en FIV con óvulos propios, un tratamiento personalizado a tu historia y un equipo de expertos dedicado 100% a ti.</p>
+          </div>
+        </div>
+
+        <!-- Testimonial: Itzel & Armando -->
+        <div class="section-title">Historias reales</div>
+        <div class="testi">
+          <div class="quote">"</div>
+          <p>Después de dos años intentando tener un bebé, con varias pérdidas en el camino, Yareth llegó y transformó nuestras vidas. Nunca pierdas la fe, confía en los especialistas y mantén la esperanza.</p>
+          <div class="who">
+            <div class="avatar soft photo" style="background-image:url('Im%C3%A1genes/itzel-y-armando.webp');"></div>
+            <div>
+              <div class="nm">Itzel &amp; Armando</div>
+              <div class="sb">Papás Ingenes · Guadalajara</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video testimonial: Adriana y Jaime -->
+        <div class="video-card" onclick="toast('Reproduciendo video testimonial…','ti-player-play')">
+          <div class="video-thumb">
+            <div class="vt-play"></div>
+            <div class="vt-dur">4:10</div>
+            <div class="vt-title">"La FIV era nuestra última esperanza"</div>
+            <div class="vt-sub">Adriana y Jaime, padres Ingenes</div>
+          </div>
+          <div class="vc-body">
+            <div class="vc-tag">Video testimonio</div>
+            <h3>La historia de Adriana y Jaime</h3>
+          </div>
+        </div>
+
+        <div class="section-title">Aprende más</div>
+
+        <div class="learn-card" onclick="window.open('https://www.ingenes.com/fertilidad/infertilidad-sin-causa-aparente-por-que-pasa-y-que-hacer-despues/','_blank')">
+          <div class="learn-thumb"><img src="https://www.ingenes.com/images/blog/47860.jpg" alt=""/></div>
+          <div class="lc-body">
+            <div class="lc-tag">Fertilidad</div>
+            <h3>Infertilidad sin causa aparente</h3>
+            <p>Por qué pasa y qué hacer después.</p>
+            <div class="lc-foot"><i class="ti ti-external-link"></i> Leer en el blog</div>
+          </div>
+        </div>
+
+        <div class="learn-card" onclick="window.open('https://www.ingenes.com/fertilidad/miomas-polipos-y-adenomiosis-cuando-si-afectan-la-implantacion-y-cuando-no/','_blank')">
+          <div class="learn-thumb"><img src="https://www.ingenes.com/images/blog/47209.jpg" alt="" style="object-position: 72% center;"/></div>
+          <div class="lc-body">
+            <div class="lc-tag">Fertilidad</div>
+            <h3>Miomas, pólipos y adenomiosis</h3>
+            <p>Cuándo sí afectan la implantación y cuándo no.</p>
+            <div class="lc-foot"><i class="ti ti-external-link"></i> Leer en el blog</div>
+          </div>
+        </div>
+
+        <div class="learn-card" onclick="window.open('https://www.ingenes.com/investigacion/fecundacion-in-vitro-en-casos-complejos-como-un-enfoque-multinivel-ayudo-a-lograr-un-embarazo/','_blank')">
+          <div class="learn-thumb"><img src="https://www.ingenes.com/images/blog/47241.jpg" alt=""/></div>
+          <div class="lc-body">
+            <div class="lc-tag">Reproducción asistida</div>
+            <h3>FIV en casos complejos</h3>
+            <p>Cómo un enfoque multinivel ayudó a lograr un embarazo.</p>
+            <div class="lc-foot"><i class="ti ti-external-link"></i> Leer en el blog</div>
+          </div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== DEFAULT · pareja (stage 2) ===================== -->
+      <div id="aprende-default">
+      <div class="chips-row">
+        <div class="chip active">Para ustedes</div>
+        <div class="chip">Método ROPA</div>
+        <div class="chip">Estudios</div>
+        <div class="chip">Testimonios</div>
+        <div class="chip">FIV</div>
+      </div>
+
+      <!-- Featured: ROPA -->
+      <div class="learn-feature">
+        <div class="lf-deco"><i class="ti ti-gender-female"></i></div>
+        <div class="lf-content">
+          <span class="lf-tag">MÉTODO ROPA</span>
+          <h2>Maternidad compartida</h2>
+          <p>El método ROPA permite que ambas participen en el embarazo: una aporta los óvulos y la otra gesta a su bebé. Conoce cómo funciona, paso a paso.</p>
+        </div>
+      </div>
+
+      <!-- Testimonial: women couples -->
+      <div class="section-title">Historias reales</div>
+      <div class="testi">
+        <div class="quote">"</div>
+        <p>Las dos quisimos ser mamás de la misma forma. Con ROPA, yo doné los óvulos y Camila lo llevó en su vientre. Hoy nuestra hija es de las dos, en todos los sentidos.</p>
+        <div class="who">
+          <div class="avatar soft">A&amp;P</div>
+          <div>
+            <div class="nm">Andrea &amp; Paula</div>
+            <div class="sb">Mamás Ingenes · Guadalajara</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="learn-card">
+        <div class="learn-thumb" style="background:linear-gradient(150deg,#c8a040,#b08a32);"><i class="ti ti-users"></i></div>
+        <div class="lc-body">
+          <div class="lc-tag">Testimonios</div>
+          <h3>Parejas de mujeres que cumplieron su sueño</h3>
+          <p>Tres historias de familias formadas con el método ROPA en Ingenes.</p>
+          <div class="lc-foot"><i class="ti ti-player-play"></i> Video · 6 min</div>
+        </div>
+      </div>
+
+      <div class="section-title">Aprende más</div>
+
+      <div class="learn-card">
+        <div class="learn-thumb" style="background:linear-gradient(150deg,#2b5d86,#1B3A5C);"><i class="ti ti-list-check"></i></div>
+        <div class="lc-body">
+          <div class="lc-tag">Estudios</div>
+          <h3>¿Qué estudios nos haremos antes del diagnóstico?</h3>
+          <p>Perfil hormonal, serología y valoración: qué incluye cada uno y por qué.</p>
+          <div class="lc-foot"><i class="ti ti-clock"></i> 5 min lectura</div>
+        </div>
+      </div>
+
+      <div class="learn-card">
+        <div class="learn-thumb" style="background:linear-gradient(150deg,#4A8AB5,#2b5d86);"><i class="ti ti-dna"></i></div>
+        <div class="lc-body">
+          <div class="lc-tag">Método ROPA</div>
+          <h3>Quién aporta los óvulos y quién gesta</h3>
+          <p>Cómo se decide cada rol y qué evalúa tu médico para acompañarlas.</p>
+          <div class="lc-foot"><i class="ti ti-clock"></i> 7 min lectura</div>
+        </div>
+      </div>
+
+      <div class="learn-card">
+        <div class="learn-thumb" style="background:linear-gradient(150deg,#0d8a63,#0a6d4e);"><i class="ti ti-heartbeat"></i></div>
+        <div class="lc-body">
+          <div class="lc-tag">Bienestar</div>
+          <h3>Cuidarse en pareja durante el proceso</h3>
+          <p>Apoyo emocional y hábitos que favorecen la fertilidad de ambas.</p>
+          <div class="lc-foot"><i class="ti ti-clock"></i> 4 min lectura</div>
+        </div>
+      </div>
+
+      </div><!-- /#aprende-default -->
+
+      <div style="height:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ CALENDARIO ============ -->
+  <div class="screen" id="screen-calendario">
+    <div class="top-bar-simple">
+      <div class="h-left"><h1>Calendario</h1></div>
+      <div class="hdr-av" onclick="openMenu()">
+        <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
+        <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
+      </div>
+    </div>
+    <div class="scroll-area">
+
+      <!-- ===================== STAGE 1 · ya_agendo (Julio 2026 · 1ª consulta 23 jul) ===================== -->
+      <div id="calendario-stage1" style="display:none;">
+        <div class="cal-card">
+          <div class="cal-header">
+            <div class="nav-btn"><i class="ti ti-chevron-left"></i></div>
+            <h2>Julio 2026</h2>
+            <div class="nav-btn"><i class="ti ti-chevron-right"></i></div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-day-name">L</div><div class="cal-day-name">M</div><div class="cal-day-name">M</div><div class="cal-day-name">J</div><div class="cal-day-name">V</div><div class="cal-day-name">S</div><div class="cal-day-name">D</div>
+            <div class="cal-day muted">29</div><div class="cal-day muted">30</div><div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div>
+            <div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day today">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+            <div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div>
+            <div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day event-gold">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div>
+            <div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day">31</div><div class="cal-day muted">1</div><div class="cal-day muted">2</div>
+          </div>
+        </div>
+
+        <div class="section-title">Próximas citas</div>
+        <div class="card" style="padding:4px 18px;">
+          <div class="appt">
+            <div class="appt-date"><div class="d">23</div><div class="m">Jul</div></div>
+            <div class="appt-info">
+              <div class="title">Primera consulta</div>
+              <div class="sub"><i class="ti ti-building-hospital"></i> Presencial · Sucursal Monterrey</div>
+              <div class="sub"><i class="ti ti-user-heart"></i> Dr. Enrique Rodríguez</div>
+            </div>
+            <span class="status-pill soon">13:30</span>
+          </div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== S2 · ya_primera (Julio 2026 · 1ª consulta hecha) ===================== -->
+      <div id="calendario-s2" style="display:none;">
+        <div class="cal-card">
+          <div class="cal-header">
+            <div class="nav-btn"><i class="ti ti-chevron-left"></i></div>
+            <h2>Julio 2026</h2>
+            <div class="nav-btn"><i class="ti ti-chevron-right"></i></div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-day-name">L</div><div class="cal-day-name">M</div><div class="cal-day-name">M</div><div class="cal-day-name">J</div><div class="cal-day-name">V</div><div class="cal-day-name">S</div><div class="cal-day-name">D</div>
+            <div class="cal-day muted">29</div><div class="cal-day muted">30</div><div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div>
+            <div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+            <div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div>
+            <div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day done">23</div><div class="cal-day">24</div><div class="cal-day done">25</div><div class="cal-day">26</div>
+            <div class="cal-day">27</div><div class="cal-day today">28</div><div class="cal-day">29</div><div class="cal-day event-gold">30</div><div class="cal-day">31</div><div class="cal-day muted">1</div><div class="cal-day muted">2</div>
+          </div>
+        </div>
+
+        <div class="section-title">Próximos eventos</div>
+        <div class="card" style="padding:4px 18px;">
+          <div class="appt">
+            <div class="appt-date"><div class="d">30</div><div class="m">Jul</div></div>
+            <div class="appt-info">
+              <div class="title">Inicio de estimulación ovárica</div>
+              <div class="sub"><i class="ti ti-vaccine"></i> Comienza tu tratamiento FIV · Monterrey</div>
+            </div>
+            <span class="status-pill soon">Programado</span>
+          </div>
+        </div>
+
+        <div class="section-title">Eventos anteriores</div>
+        <div class="card" style="padding:4px 18px;">
+          <div class="appt">
+            <div class="appt-date past"><div class="d">25</div><div class="m">Jul</div></div>
+            <div class="appt-info">
+              <div class="title">Estudios y perfil hormonal</div>
+              <div class="sub"><i class="ti ti-map-pin"></i> Laboratorio Ingenes · Monterrey</div>
+            </div>
+            <span class="status-pill ok">Completada</span>
+          </div>
+          <div class="appt">
+            <div class="appt-date past"><div class="d">23</div><div class="m">Jul</div></div>
+            <div class="appt-info">
+              <div class="title">Primera consulta presencial</div>
+              <div class="sub"><i class="ti ti-user-heart"></i> Dr. Enrique Rodríguez · Monterrey</div>
+            </div>
+            <span class="status-pill ok">Completada</span>
+          </div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== DEFAULT (ya_primera_lgbt / otros) ===================== -->
+      <div id="calendario-default">
+      <div class="cal-card">
+        <div class="cal-header">
+          <div class="nav-btn"><i class="ti ti-chevron-left"></i></div>
+          <h2>Junio 2026</h2>
+          <div class="nav-btn"><i class="ti ti-chevron-right"></i></div>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-name">L</div><div class="cal-day-name">M</div><div class="cal-day-name">M</div><div class="cal-day-name">J</div><div class="cal-day-name">V</div><div class="cal-day-name">S</div><div class="cal-day-name">D</div>
+          <div class="cal-day muted">26</div><div class="cal-day muted">27</div><div class="cal-day muted">28</div><div class="cal-day muted">29</div><div class="cal-day muted">30</div><div class="cal-day muted">31</div><div class="cal-day">1</div>
+          <div class="cal-day">2</div><div class="cal-day done">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day today">8</div>
+          <div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day event">11</div><div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day">15</div>
+          <div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day event-gold">18</div><div class="cal-day">19</div><div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div>
+          <div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day event">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day">29</div>
+          <div class="cal-day">30</div>
+        </div>
+      </div>
+
+      <div class="section-title">Próximas citas</div>
+      <div class="card" style="padding:4px 18px;">
+        <div class="appt">
+          <div class="appt-date"><div class="d">11</div><div class="m">Jun</div></div>
+          <div class="appt-info">
+            <div class="title">Estudios y perfil hormonal</div>
+            <div class="sub"><i class="ti ti-map-pin"></i> Laboratorio Ingenes · CDMX Sur</div>
+          </div>
+          <span class="status-pill soon">8:00 am</span>
+        </div>
+        <div class="appt">
+          <div class="appt-date"><div class="d">18</div><div class="m">Jun</div></div>
+          <div class="appt-info">
+            <div class="title">Consulta de diagnóstico</div>
+            <div class="sub"><i class="ti ti-video"></i> Online · Dr. Ricardo Funes</div>
+          </div>
+          <span class="status-pill soon">10:30 am</span>
+        </div>
+        <div class="appt">
+          <div class="appt-date"><div class="d">25</div><div class="m">Jun</div></div>
+          <div class="appt-info">
+            <div class="title">Plan de tratamiento ROPA</div>
+            <div class="sub"><i class="ti ti-user-heart"></i> Mariana Estrada · PBB</div>
+          </div>
+          <span class="status-pill soon">12:00 pm</span>
+        </div>
+      </div>
+
+      <div class="section-title">Citas pasadas</div>
+      <div class="card" style="padding:4px 18px;">
+        <div class="appt">
+          <div class="appt-date past"><div class="d">3</div><div class="m">Jun</div></div>
+          <div class="appt-info">
+            <div class="title">Primera consulta online</div>
+            <div class="sub"><i class="ti ti-video"></i> Dr. Ricardo Funes</div>
+          </div>
+          <span class="status-pill ok">Completada</span>
+        </div>
+      </div>
+
+      </div><!-- /#calendario-default -->
+
+      <div style="height:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ MI PLAN ============ -->
+  <div class="screen" id="screen-miplan">
+    <div class="top-bar-simple">
+      <div class="h-left"><h1>Mi plan</h1></div>
+      <div class="hdr-av" onclick="openMenu()">
+        <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
+        <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
+      </div>
+    </div>
+    <div class="scroll-area">
+
+      <!-- ===================== S2 · ya_primera (FIV · Monterrey) ===================== -->
+      <div id="miplan-s2" style="display:none;">
+        <div class="treat-card">
+          <div class="tc-lbl">Programa activo</div>
+          <div class="tc-title">FIV (In Vitro) · Etapa tratamiento</div>
+          <div class="tc-sub">Ingenes Monterrey</div>
+          <div class="bar"><div style="width:70%;"></div></div>
+          <div class="tc-pct">Avance del journey: 70%</div>
+        </div>
+
+        <div class="section-title">Tu plan paso a paso</div>
+        <div class="card">
+          <div class="plan-step">
+            <div class="ps-ico num">1</div>
+            <div class="ps-b">
+              <div class="t">Estimulación ovárica</div>
+              <div class="s">Medicación hormonal para madurar varios óvulos en un ciclo.</div>
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="ps-ico num">2</div>
+            <div class="ps-b">
+              <div class="t">Punción ovárica</div>
+              <div class="s">Extracción de los óvulos maduros con sedación, ambulatoria.</div>
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="ps-ico num">3</div>
+            <div class="ps-b">
+              <div class="t">Fertilización</div>
+              <div class="s">Se unen óvulos y espermatozoides para formar los embriones.</div>
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="ps-ico num">4</div>
+            <div class="ps-b">
+              <div class="t">Cultivo embrionario</div>
+              <div class="s">Los embriones se desarrollan y evalúan de 3 a 5 días.</div>
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="ps-ico num">5</div>
+            <div class="ps-b">
+              <div class="t">Transferencia embrionaria</div>
+              <div class="s">Los mejores embriones se transfieren al útero, sin dolor.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Plan de pago</div>
+        <div class="card">
+          <div class="pay-row"><span class="pl">Programa FIV · Paquete integral</span></div>
+          <div class="pay-row" style="margin-top:8px;"><span class="pl">Total del tratamiento</span><span class="pv">$148,000</span></div>
+          <div class="pay-row"><span class="pl">Pagado</span><span class="pv" style="color:#0d8a63;">$37,000</span></div>
+          <div class="pay-row"><span class="pl">Saldo</span><span class="pv">$111,000</span></div>
+          <div class="bar" style="margin-top:12px;background:var(--ing-border);height:7px;border-radius:8px;overflow:hidden;"><div style="width:25%;height:100%;background:var(--ing-gold);"></div></div>
+          <div style="font-size:11px;color:var(--ing-muted);margin-top:7px;font-weight:700;">25% cubierto · próximo pago: 30 jul</div>
+          <div class="attach" style="margin-top:14px;">
+            <div class="ai"><i class="ti ti-file-dollar"></i></div>
+            <div class="at">
+              <div class="t">Propuesta económica</div>
+              <div class="s">PDF · 4 págs · 1.2 MB</div>
+            </div>
+            <i class="ti ti-chevron-right chev"></i>
+          </div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== DEFAULT · ROPA (ya_primera_lgbt) ===================== -->
+      <div id="miplan-default">
+      <div class="treat-card">
+        <div class="tc-lbl">Programa activo</div>
+        <div class="tc-title">Método ROPA · Etapa diagnóstico</div>
+        <div class="tc-sub">Ingenes CDMX Sur · Torre Santa Fe</div>
+        <div class="bar"><div style="width:25%;"></div></div>
+        <div class="tc-pct">Avance del journey: 25%</div>
+      </div>
+
+      <div class="section-title">Tu plan paso a paso</div>
+      <div class="card">
+        <div class="plan-step">
+          <div class="ps-ico done"><i class="ti ti-circle-check"></i></div>
+          <div class="ps-b">
+            <div class="t">Primera consulta online</div>
+            <div class="s">Completada el 3 jun · Dr. Ricardo Funes</div>
+          </div>
+        </div>
+        <div class="plan-step">
+          <div class="ps-ico curr"><i class="ti ti-microscope"></i></div>
+          <div class="ps-b">
+            <div class="t">Estudios y diagnóstico</div>
+            <div class="s">En curso · perfil hormonal y serología para ambas</div>
+          </div>
+        </div>
+        <div class="plan-step">
+          <div class="ps-ico todo"><i class="ti ti-clipboard-heart"></i></div>
+          <div class="ps-b">
+            <div class="t">Plan de tratamiento ROPA</div>
+            <div class="s">Definición de roles y protocolo personalizado</div>
+          </div>
+        </div>
+        <div class="plan-step">
+          <div class="ps-ico todo"><i class="ti ti-vaccine"></i></div>
+          <div class="ps-b">
+            <div class="t">Inicio de tratamiento</div>
+            <div class="s">Estimulación, captura y transferencia</div>
+          </div>
+        </div>
+        <div class="plan-step">
+          <div class="ps-ico todo"><i class="ti ti-baby-carriage"></i></div>
+          <div class="ps-b">
+            <div class="t">Embarazo</div>
+            <div class="s">Seguimiento y acompañamiento</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Plan de pago</div>
+      <div class="card">
+        <div class="pay-row"><span class="pl">Programa ROPA · Paquete integral</span></div>
+        <div class="pay-row" style="margin-top:8px;"><span class="pl">Total del tratamiento</span><span class="pv">$148,000</span></div>
+        <div class="pay-row"><span class="pl">Pagado</span><span class="pv" style="color:#0d8a63;">$37,000</span></div>
+        <div class="pay-row"><span class="pl">Saldo</span><span class="pv">$111,000</span></div>
+        <div class="bar" style="margin-top:12px;background:var(--ing-border);height:7px;border-radius:8px;overflow:hidden;"><div style="width:25%;height:100%;background:var(--ing-gold);"></div></div>
+        <div style="font-size:11px;color:var(--ing-muted);margin-top:7px;font-weight:700;">25% cubierto · próximo pago: 18 jun</div>
+        <div class="attach" style="margin-top:14px;">
+          <div class="ai"><i class="ti ti-file-dollar"></i></div>
+          <div class="at">
+            <div class="t">Propuesta económica · ROPA</div>
+            <div class="s">PDF · 4 págs · 1.2 MB</div>
+          </div>
+          <i class="ti ti-chevron-right chev"></i>
+        </div>
+      </div>
+
+      </div><!-- /#miplan-default -->
+
+      <div style="height:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ EQUIPO (team + WhatsApp) ============ -->
+  <div class="screen" id="screen-equipo">
+
+    <!-- ===== S2 · ya_primera (equipo Monterrey) ===== -->
+    <div id="equipo-s2" class="equipo-view" style="display:none;">
+      <div class="top-bar-simple">
+        <div class="h-left"><h1>Tu equipo Ingenes</h1></div>
+        <div class="hdr-av" onclick="openMenu()">
+          <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
+          <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="section-title">Tu médico</div>
+        <div class="team-doc">
+          <div class="td-top">
+            <img class="td-photo" src="Im%C3%A1genes/enrique-rodriguez-villasana.jpg" alt="Dr. Enrique Rodríguez" style="object-position: center top;"/>
+            <div>
+              <span class="td-spec"><i class="ti ti-stethoscope" style="font-size:11px;"></i> Endocrinología Ginecológica e Infertilidad</span>
+              <div class="td-name">Dr. Enrique Rodríguez Villasana</div>
+              <div class="td-suc"><i class="ti ti-map-pin"></i> Sucursal: <b>Monterrey</b></div>
+            </div>
+          </div>
+          <div class="td-grid">
+            <div><div class="k">Puesto</div><div class="v">Líder Médico</div></div>
+            <div><div class="k">Cédula profesional</div><div class="v">9917518</div></div>
+            <div><div class="k">Formación</div><div class="v">Universidad Veracruzana</div></div>
+          </div>
+          <button class="btn-wa" onclick="window.open('https://wa.me/528112345678','_blank')"><i class="ti ti-brand-whatsapp"></i> Contactar por WhatsApp</button>
+        </div>
+
+        <div class="section-title">Tu equipo de acompañamiento</div>
+        <div class="team-member">
+          <img class="tm-photo" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Paola Méndez"/>
+          <div class="tm-info">
+            <div class="tm-name">Paola Méndez</div>
+            <div class="tm-role">Enfermería</div>
+          </div>
+          <div class="tm-wa" onclick="window.open('https://wa.me/528123456789','_blank')"><i class="ti ti-brand-whatsapp"></i></div>
+        </div>
+        <div class="team-member">
+          <img class="tm-photo" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Mariana Estrada"/>
+          <div class="tm-info">
+            <div class="tm-name">Mariana Estrada</div>
+            <div class="tm-role">PBB · Asesora</div>
+          </div>
+          <div class="tm-wa" onclick="window.open('https://wa.me/528134567890','_blank')"><i class="ti ti-brand-whatsapp"></i></div>
+        </div>
+        <div style="height:6px;"></div>
+      </div>
+    </div>
+
+    <!-- ===== DEFAULT · pareja de mujeres (CDMX) ===== -->
+    <div id="equipo-default" class="equipo-view" style="display:none;">
+      <div class="top-bar-simple">
+        <div class="h-left"><h1>Tu equipo Ingenes</h1></div>
+        <div class="hdr-av" onclick="openMenu()">
+          <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
+          <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="section-title">Tu médico</div>
+        <div class="team-doc">
+          <div class="td-top">
+            <img class="td-photo" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Dr. Ricardo Funes"/>
+            <div>
+              <span class="td-spec"><i class="ti ti-stethoscope" style="font-size:11px;"></i> Biología de la Reproducción</span>
+              <div class="td-name">Dr. Ricardo Funes</div>
+              <div class="td-suc"><i class="ti ti-map-pin"></i> Sucursal: <b>CDMX Sur</b></div>
+            </div>
+          </div>
+          <div class="td-grid">
+            <div><div class="k">Puesto</div><div class="v">Líder Médico</div></div>
+            <div><div class="k">Cédula profesional</div><div class="v">8042193</div></div>
+            <div><div class="k">Formación</div><div class="v">UNAM</div></div>
+          </div>
+          <button class="btn-wa" onclick="window.open('https://wa.me/525512345678','_blank')"><i class="ti ti-brand-whatsapp"></i> Contactar por WhatsApp</button>
+        </div>
+
+        <div class="section-title">Tu equipo de acompañamiento</div>
+        <div class="team-member">
+          <img class="tm-photo" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Paola Méndez"/>
+          <div class="tm-info">
+            <div class="tm-name">Paola Méndez</div>
+            <div class="tm-role">Enfermería</div>
+          </div>
+          <div class="tm-wa" onclick="window.open('https://wa.me/525523456789','_blank')"><i class="ti ti-brand-whatsapp"></i></div>
+        </div>
+        <div class="team-member">
+          <img class="tm-photo" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Mariana Estrada"/>
+          <div class="tm-info">
+            <div class="tm-name">Mariana Estrada</div>
+            <div class="tm-role">PBB · Asesora</div>
+          </div>
+          <div class="tm-wa" onclick="window.open('https://wa.me/525534567890','_blank')"><i class="ti ti-brand-whatsapp"></i></div>
+        </div>
+        <div style="height:6px;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ MI PERFIL ============ -->
+  <div class="screen" id="screen-perfil">
+    <div class="profile-hero">
+      <div class="back" onclick="showScreen('inicio')"><i class="ti ti-arrow-left"></i></div>
+      <div class="couple-av">
+        <div class="avatar gold" data-person="A"><span class="ini">VS</span></div>
+        <div class="avatar blue" data-person="B"><span class="ini">CR</span></div>
+      </div>
+      <div class="pname" id="pname">Valeria Soto &amp; Camila Ríos</div>
+    </div>
+    <div class="scroll-area">
+
+      <div class="section-title">Mis datos</div>
+      <div class="photo-row">
+        <div class="photo-slot">
+          <div class="pa p-a" data-person="A"><span class="ini">VS</span><div class="cam"><i class="ti ti-camera"></i></div></div>
+          <div class="pn" id="photo-name-A">Valeria Soto</div>
+          <div class="pup" onclick="pickPhoto('A')">Cambiar foto</div>
+          <input type="file" id="file-A" accept="image/*" class="hidden" onchange="onPhoto('A',this)"/>
+        </div>
+        <div class="photo-slot" id="photo-slot-B">
+          <div class="pa p-b" data-person="B"><span class="ini">CR</span><div class="cam"><i class="ti ti-camera"></i></div></div>
+          <div class="pn" id="photo-name-B">Camila Ríos</div>
+          <div class="pup" onclick="pickPhoto('B')">Cambiar foto</div>
+          <input type="file" id="file-B" accept="image/*" class="hidden" onchange="onPhoto('B',this)"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="data-field">
+          <div class="df-main">
+            <div class="df-label">Nombre y apellido</div>
+            <input class="df-input" id="dato-nombre" value="Valeria Soto"/>
+          </div>
+          <i class="ti ti-pencil df-edit" onclick="this.parentElement.querySelector('.df-input').focus()"></i>
+        </div>
+        <div class="data-field" id="field-nombre-B">
+          <div class="df-main">
+            <div class="df-label">Nombre y apellido</div>
+            <input class="df-input" id="dato-nombre-b" value="Camila Ríos"/>
+          </div>
+          <i class="ti ti-pencil df-edit" onclick="this.parentElement.querySelector('.df-input').focus()"></i>
+        </div>
+        <div class="data-field">
+          <div class="df-main">
+            <div class="df-label">Correo electrónico</div>
+            <input class="df-input" id="dato-correo" type="email" value="correo@ejemplo.com"/>
+          </div>
+          <i class="ti ti-pencil df-edit" onclick="this.parentElement.querySelector('.df-input').focus()"></i>
+        </div>
+        <div class="data-field">
+          <div class="df-main">
+            <div class="df-label">Teléfono</div>
+            <input class="df-input" id="dato-telefono" type="tel" value="+52 55 1234 5678"/>
+          </div>
+          <i class="ti ti-pencil df-edit" onclick="this.parentElement.querySelector('.df-input').focus()"></i>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-item" onclick="logout()">
+          <div class="mi" style="background:#fdeaea;"><i class="ti ti-logout" style="color:#c0392b;"></i></div>
+          <span class="mlabel" style="color:#c0392b;">Cerrar sesión</span>
+        </div>
+      </div>
+
+      <div style="height:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ DOCUMENTOS ============ -->
+  <div class="screen" id="screen-documentos">
+    <div class="top-bar-simple">
+      <div class="h-left">
+        <div class="hicon" onclick="showScreen('inicio')"><i class="ti ti-arrow-left"></i></div>
+        <h1>Documentos</h1>
+      </div>
+    </div>
+    <div class="scroll-area">
+
+      <!-- ===================== STAGE 0 · sin documentos disponibles ===================== -->
+      <div id="documentos-stage0" style="display:none;">
+        <div class="section-title">Tus documentos</div>
+        <div class="card">
+          <div class="doc-item pending">
+            <div class="di" style="background:#aeb9c9;"><i class="ti ti-file-certificate"></i></div>
+            <div class="dt">
+              <div class="t">Diagnóstico de fertilidad</div>
+              <div class="s">Pendiente · Disponible tras tu Primera consulta</div>
+            </div>
+            <i class="ti ti-clock dl" style="color:var(--ing-muted);"></i>
+          </div>
+          <div class="doc-item pending">
+            <div class="di" style="background:#aeb9c9;"><i class="ti ti-file-dollar"></i></div>
+            <div class="dt">
+              <div class="t">Propuesta económica</div>
+              <div class="s">Pendiente · Disponible tras tu Primera consulta</div>
+            </div>
+            <i class="ti ti-clock dl" style="color:var(--ing-muted);"></i>
+          </div>
+          <div class="doc-item pending">
+            <div class="di" style="background:#aeb9c9;"><i class="ti ti-flask"></i></div>
+            <div class="dt">
+              <div class="t">Resultados de tus estudios</div>
+              <div class="s">Pendiente · Disponible tras tu Primera consulta</div>
+            </div>
+            <i class="ti ti-clock dl" style="color:var(--ing-muted);"></i>
+          </div>
+          <div class="doc-item pending">
+            <div class="di" style="background:#aeb9c9;"><i class="ti ti-clipboard-heart"></i></div>
+            <div class="dt">
+              <div class="t">Plan de tratamiento</div>
+              <div class="s">Pendiente · Disponible tras tu Primera consulta</div>
+            </div>
+            <i class="ti ti-clock dl" style="color:var(--ing-muted);"></i>
+          </div>
+        </div>
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== STAGE 1 · ya_agendo ===================== -->
+      <div id="documentos-stage1" style="display:none;">
+        <div class="section-title">Tus documentos</div>
+        <div class="card">
+          <div class="doc-item">
+            <div class="di" style="background:var(--ing-navy);"><i class="ti ti-file-certificate"></i></div>
+            <div class="dt">
+              <div class="t">Diagnóstico de fertilidad</div>
+              <div class="s">PDF · 1.1 MB</div>
+            </div>
+            <i class="ti ti-download dl"></i>
+          </div>
+          <div class="doc-item">
+            <div class="di" style="background:var(--ing-blue);"><i class="ti ti-file-dollar"></i></div>
+            <div class="dt">
+              <div class="t">Propuesta económica</div>
+              <div class="s">PDF · 0.9 MB</div>
+            </div>
+            <i class="ti ti-download dl"></i>
+          </div>
+          <div class="doc-item">
+            <div class="di" style="background:var(--ing-gold);"><i class="ti ti-flask"></i></div>
+            <div class="dt">
+              <div class="t">Resultados de laboratorio</div>
+              <div class="s">PDF · 0.7 MB</div>
+            </div>
+            <i class="ti ti-download dl"></i>
+          </div>
+          <div class="doc-item">
+            <div class="di" style="background:#0d8a63;"><i class="ti ti-clipboard-heart"></i></div>
+            <div class="dt">
+              <div class="t">Plan de tratamiento</div>
+              <div class="s">PDF · 1.0 MB</div>
+            </div>
+            <i class="ti ti-download dl"></i>
+          </div>
+        </div>
+        <div style="height:6px;"></div>
+      </div>
+
+      <!-- ===================== DEFAULT · stage 2 ===================== -->
+      <div id="documentos-default">
+        <div class="section-title">Tus documentos</div>
+        <div class="card">
+          <div class="doc-item">
+            <div class="di" style="background:var(--ing-navy);"><i class="ti ti-file-dollar"></i></div>
+            <div class="dt">
+              <div class="t">Propuesta económica · ROPA</div>
+              <div class="s">PDF · 1.2 MB · 2 jun 2026</div>
+            </div>
+            <i class="ti ti-download dl"></i>
+          </div>
+          <div class="doc-item">
+            <div class="di" style="background:var(--ing-blue);"><i class="ti ti-clipboard-list"></i></div>
+            <div class="dt">
+              <div class="t">Lista de estudios e indicaciones</div>
+              <div class="s">PDF · 480 KB · 9 jun 2026</div>
+            </div>
+            <i class="ti ti-download dl"></i>
+          </div>
+          <div class="doc-item">
+            <div class="di" style="background:var(--ing-gold);"><i class="ti ti-file-certificate"></i></div>
+            <div class="dt">
+              <div class="t">Consentimiento informado</div>
+              <div class="s">PDF · 320 KB · 3 jun 2026</div>
+            </div>
+            <i class="ti ti-download dl"></i>
+          </div>
+          <div class="doc-item pending">
+            <div class="di" style="background:#aeb9c9;"><i class="ti ti-flask"></i></div>
+            <div class="dt">
+              <div class="t">Resultados de laboratorio</div>
+              <div class="s">Pendiente · disponible tras tus estudios</div>
+            </div>
+            <i class="ti ti-clock dl" style="color:var(--ing-muted);"></i>
+          </div>
+        </div>
+        <div style="height:6px;"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ CONFIGURACIÓN ============ -->
+  <div class="screen" id="screen-configuracion">
+    <div class="top-bar-simple">
+      <div class="h-left">
+        <div class="hicon" onclick="showScreen('inicio')"><i class="ti ti-arrow-left"></i></div>
+        <h1>Configuración</h1>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div class="section-title">Notificaciones</div>
+      <div class="card">
+        <div class="cfg-item">
+          <div class="ci3"><i class="ti ti-bell"></i></div>
+          <div class="cl">Notificaciones push<div class="cs">Avisos de tu proceso y mensajes</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="cfg-item">
+          <div class="ci3"><i class="ti ti-calendar-event"></i></div>
+          <div class="cl">Recordatorios de citas<div class="cs">Un día antes de cada cita</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="cfg-item">
+          <div class="ci3"><i class="ti ti-mail"></i></div>
+          <div class="cl">Correos informativos<div class="cs">Contenido y novedades de Ingenes</div></div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <div class="section-title">Preferencias</div>
+      <div class="card">
+        <div class="cfg-item">
+          <div class="ci3"><i class="ti ti-language"></i></div>
+          <div class="cl">Idioma</div>
+          <span style="font-size:12.5px;color:var(--ing-muted);font-weight:700;">Español</span>
+          <i class="ti ti-chevron-right mchev"></i>
+        </div>
+        <div class="cfg-item">
+          <div class="ci3"><i class="ti ti-moon"></i></div>
+          <div class="cl">Modo oscuro</div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-item" onclick="logout()">
+          <div class="mi" style="background:#fdeaea;"><i class="ti ti-logout" style="color:#c0392b;"></i></div>
+          <span class="mlabel" style="color:#c0392b;">Cerrar sesión</span>
+        </div>
+        <div class="menu-item" onclick="toast('Eliminar cuenta (simulado)','ti-trash')">
+          <div class="mi" style="background:#fdeaea;"><i class="ti ti-trash" style="color:#c0392b;"></i></div>
+          <span class="mlabel" style="color:#c0392b;">Eliminar cuenta</span>
+        </div>
+      </div>
+      <div style="height:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-screen="inicio" onclick="navTo('inicio',this)">
+      <div class="ni-wrap"><i class="ti ti-home-2"></i></div>
+      <span>Inicio</span>
+    </button>
+    <button class="nav-item" data-screen="aprende" onclick="navTo('aprende',this)">
+      <div class="ni-wrap"><i class="ti ti-book-2"></i></div>
+      <span>Aprende</span>
+    </button>
+    <button class="nav-item" data-screen="calendario" onclick="navTo('calendario',this)">
+      <div class="ni-wrap"><i class="ti ti-calendar-heart"></i></div>
+      <span>Calendario</span>
+    </button>
+    <button class="nav-item" data-screen="miplan" onclick="navTo('miplan',this)">
+      <div class="ni-wrap"><i class="ti ti-clipboard-heart"></i></div>
+      <span>Mi plan</span>
+    </button>
+    <button class="nav-item" data-screen="equipo" onclick="navTo('equipo',this)">
+      <div class="ni-wrap"><i class="ti ti-users"></i></div>
+      <span>Equipo</span>
+    </button>
+  </nav>
+
+  </div><!-- /#app -->
+
+  <!-- ============ AVATAR MENU OVERLAY ============ -->
+  <div class="menu-overlay" id="menu-overlay" onclick="closeMenu()">
+    <div class="avatar-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-grip"></div>
+      <div class="sheet-head">
+        <div class="couple">
+          <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
+          <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
+        </div>
+        <div>
+          <div class="nm" id="sheet-name">Valeria &amp; Camila</div>
+          <div class="sb" id="sheet-sub">Cuenta de pareja · ING-2026-04127</div>
+        </div>
+      </div>
+      <div class="sheet-item" onclick="showScreen('perfil')">
+        <div class="si"><i class="ti ti-user-heart"></i></div>
+        <span class="sl">Mi perfil</span>
+        <i class="ti ti-chevron-right schev"></i>
+      </div>
+      <div class="sheet-item" onclick="showScreen('documentos')">
+        <div class="si"><i class="ti ti-folder"></i></div>
+        <span class="sl">Documentos</span>
+        <i class="ti ti-chevron-right schev"></i>
+      </div>
+      <div class="sheet-item" onclick="showScreen('configuracion')">
+        <div class="si"><i class="ti ti-settings"></i></div>
+        <span class="sl">Configuración</span>
+        <i class="ti ti-chevron-right schev"></i>
+      </div>
+      <div class="sheet-item logout" onclick="logout()">
+        <div class="si"><i class="ti ti-logout"></i></div>
+        <span class="sl">Cerrar sesión</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div class="toast" id="toast"><i class="ti ti-lock"></i><span id="toast-text"></span></div>
+</div>
+
+<script>
+  /* ===== User model (per demo email) ===== */
+  // content: qué set de contenidos mostrar ('s0' | 's1' | 'default'), independiente de la etapa (stage controla qué se habilita en el nav)
+  const COUPLE = {
+    couple: true, name: 'Valeria & Camila', subtitle: 'PROGRAMA ROPA · INGENES CDMX SUR',
+    iniA: 'VS', iniB: 'CR', nameA: 'Valeria Soto', nameB: 'Camila Ríos',
+    profileName: 'Valeria Soto & Camila Ríos', sheetSub: 'Cuenta de pareja · ING-2026-04127', content: 'default'
+  };
+  const USERS = {
+    // Etapa 0: persona individual, aún no agenda
+    'no_ha_agendado@test.com': {
+      stage: 0, content: 's0', couple: false, name: 'Sofía Ramírez', subtitle: 'AGENDA TU PRIMERA CONSULTA',
+      iniA: 'SR', nameA: 'Sofía Ramírez', profileName: 'Sofía Ramírez',
+      sheetSub: 'Aún no eres paciente · agenda tu cita', tel: '+52 55 1234 5678'
+    },
+    // Etapa 1: pareja heterosexual en Monterrey, ya agendó pero no asiste
+    'ya_agendo@test.com': {
+      stage: 1, content: 's1', views: { inicio: 's1', aprende: 's1', docs: 's0', cal: 's1', equipo: 'default', miplan: 'default' },
+      couple: true, name: 'Sofía & Mario', subtitle: 'PAREJA HETEROSEXUAL · INGENES MONTERREY',
+      iniA: 'S', iniB: 'M', nameA: 'Sofía Ramírez', nameB: 'Mario Herrejón',
+      profileName: 'Sofía & Mario', sheetSub: 'Cuenta de pareja · Ingenes Monterrey', tel: '+52 81 4821 0937'
+    },
+    // Etapa 2: continuación de ya_agendo (misma pareja heterosexual), ya fue a su primera consulta
+    'ya_primera@test.com': {
+      stage: 2, content: 's1', views: { inicio: 's2', aprende: 's1', docs: 's1', cal: 's2', equipo: 's2', miplan: 's2' },
+      couple: true, name: 'Sofía & Mario', subtitle: 'PAREJA HETEROSEXUAL · INGENES MONTERREY',
+      iniA: 'S', iniB: 'M', nameA: 'Sofía Rivera', nameB: 'Mario Herrejón',
+      profileName: 'Sofía & Mario', sheetSub: 'Cuenta de pareja · Ingenes Monterrey', tel: '+52 81 4821 0937'
+    },
+    // Etapa 2: pareja de mujeres · ROPA (LGBT)
+    'ya_primera_lgbt@test.com': Object.assign({}, COUPLE, { stage: 2, content: 'default', tel: '+52 33 2840 1196' })
+  };
+  function getUser(email) { return USERS[email] || Object.assign({}, COUPLE, { stage: 2, content: 'default', tel: '+52 55 0000 0000' }); }
+  const ENABLED = {
+    0: ['inicio', 'aprende'],
+    1: ['inicio', 'aprende', 'calendario'],
+    2: ['inicio', 'aprende', 'calendario', 'miplan', 'equipo']
+  };
+  const LOCKMSG = {
+    calendario: 'Disponible cuando agendes tu primera cita',
+    miplan: 'Disponible cuando inicies tu tratamiento',
+    equipo: 'Disponible cuando inicies tu tratamiento'
+  };
+  let CURRENT_STAGE = 2;
+
+  function applyStage(stage) {
+    CURRENT_STAGE = stage;
+    document.querySelectorAll('.nav-item').forEach(b => {
+      const s = b.dataset.screen;
+      const ok = ENABLED[stage].includes(s);
+      b.classList.toggle('locked', !ok);
+      b.dataset.lock = LOCKMSG[s] || '';
+      // lock badge
+      let lk = b.querySelector('.lock');
+      if (!ok && !lk) {
+        lk = document.createElement('i');
+        lk.className = 'ti ti-lock-filled lock';
+        b.querySelector('.ni-wrap').appendChild(lk);
+      }
+      if (ok && lk) lk.remove();
+      // notification badge
+      const nb = b.querySelector('.nb');
+      if (nb) nb.style.display = ok ? '' : 'none';
+    });
+  }
+
+  /* ===== Apply user profile (single vs couple) + stage + inicio variant ===== */
+  function applyUser(email) {
+    const u = getUser(email);
+
+    // Header (Inicio)
+    document.getElementById('hdr-name').textContent = u.name;
+    document.getElementById('hdr-subtitle').textContent = u.subtitle;
+
+    // Initials
+    document.querySelectorAll('[data-person="A"] .ini').forEach(e => e.textContent = u.iniA);
+    if (u.iniB) document.querySelectorAll('[data-person="B"] .ini').forEach(e => e.textContent = u.iniB);
+
+    // Couple vs single: hide all "person B" avatars + the second photo slot
+    document.querySelectorAll('[data-person="B"]').forEach(e => e.style.display = u.couple ? '' : 'none');
+    document.getElementById('photo-slot-B').style.display = u.couple ? '' : 'none';
+
+    // Names across the app
+    document.getElementById('sheet-name').textContent = u.name;
+    document.getElementById('sheet-sub').textContent = u.sheetSub;
+    document.getElementById('pname').textContent = u.profileName;
+    document.getElementById('photo-name-A').textContent = u.nameA;
+    document.getElementById('photo-name-B').textContent = u.nameB || '';
+
+    // Editable account data
+    document.getElementById('dato-nombre').value = u.nameA;
+    document.getElementById('dato-nombre-b').value = u.nameB || '';
+    document.getElementById('field-nombre-B').style.display = u.couple ? '' : 'none';
+    document.getElementById('dato-correo').value = email;
+    document.getElementById('dato-telefono').value = u.tel;
+
+    // Content variants per user, selectable per screen (u.views), fallback to uniform u.content
+    const v = u.views || { inicio: u.content, aprende: u.content, docs: u.content, cal: u.content, equipo: u.content, miplan: u.content };
+    document.getElementById('inicio-stage0').style.display = v.inicio === 's0' ? '' : 'none';
+    document.getElementById('inicio-stage1').style.display = v.inicio === 's1' ? '' : 'none';
+    document.getElementById('inicio-s2').style.display = v.inicio === 's2' ? '' : 'none';
+    document.getElementById('inicio-default').style.display = v.inicio === 'default' ? '' : 'none';
+    document.getElementById('aprende-stage0').style.display = v.aprende === 's0' ? '' : 'none';
+    document.getElementById('aprende-stage1').style.display = v.aprende === 's1' ? '' : 'none';
+    document.getElementById('aprende-default').style.display = v.aprende === 'default' ? '' : 'none';
+    document.getElementById('documentos-stage0').style.display = v.docs === 's0' ? '' : 'none';
+    document.getElementById('documentos-stage1').style.display = v.docs === 's1' ? '' : 'none';
+    document.getElementById('documentos-default').style.display = v.docs === 'default' ? '' : 'none';
+    document.getElementById('calendario-stage1').style.display = v.cal === 's1' ? '' : 'none';
+    document.getElementById('calendario-s2').style.display = v.cal === 's2' ? '' : 'none';
+    document.getElementById('calendario-default').style.display = (v.cal !== 's1' && v.cal !== 's2') ? '' : 'none';
+    document.getElementById('equipo-s2').style.display = v.equipo === 's2' ? 'flex' : 'none';
+    document.getElementById('equipo-default').style.display = v.equipo === 's2' ? 'none' : 'flex';
+    document.getElementById('miplan-s2').style.display = v.miplan === 's2' ? '' : 'none';
+    document.getElementById('miplan-default').style.display = v.miplan === 's2' ? 'none' : '';
+
+    applyStage(u.stage);
+  }
+
+  /* ===== Navigation ===== */
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('screen-' + name);
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+    closeMenu();
+    if (el) el.querySelectorAll('.scroll-area').forEach(sc => sc.scrollTop = 0);
+  }
+
+  // bottom-nav tap: respect locked state
+  function navTo(name, btn) {
+    if (btn && btn.classList.contains('locked')) {
+      toast(btn.dataset.lock || 'Sección no disponible aún', 'ti-lock');
+      return;
+    }
+    showScreen(name);
+  }
+
+  // in-content link to a bottom-nav section: respect locked state
+  function go(name) {
+    const nav = document.querySelector('.nav-item[data-screen="' + name + '"]');
+    if (nav && nav.classList.contains('locked')) {
+      toast(nav.dataset.lock || 'Sección no disponible aún', 'ti-lock');
+      return;
+    }
+    showScreen(name);
+  }
+
+  /* ===== Avatar menu ===== */
+  function openMenu() { document.getElementById('menu-overlay').classList.add('open'); }
+  function closeMenu() { document.getElementById('menu-overlay').classList.remove('open'); }
+
+  /* ===== Toast ===== */
+  let toastTimer;
+  function toast(text, icon) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-text').textContent = text;
+    t.querySelector('i').className = 'ti ' + (icon || 'ti-info-circle');
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  /* ===== Auth flow ===== */
+  let currentEmail = '';
+  function fillEmail(e) { document.getElementById('email-input').value = e; }
+
+  function submitEmail() {
+    const e = document.getElementById('email-input').value.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) { toast('Ingresa un correo válido', 'ti-alert-circle'); return; }
+    currentEmail = e;
+    document.getElementById('code-email').textContent = e;
+    document.getElementById('step-email').classList.add('hidden');
+    document.getElementById('step-code').classList.remove('hidden');
+    setTimeout(() => document.querySelector('.code-box').focus(), 50);
+  }
+
+  function backToEmail() {
+    document.getElementById('step-code').classList.add('hidden');
+    document.getElementById('step-email').classList.remove('hidden');
+    document.querySelectorAll('.code-box').forEach(i => i.value = '');
+  }
+
+  function confirmCode() {
+    const code = [...document.querySelectorAll('.code-box')].map(i => i.value).join('');
+    if (code.replace(/\D/g, '').length < 4) { toast('Ingresa los 4 dígitos', 'ti-alert-circle'); return; }
+    applyUser(currentEmail);
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    showScreen('inicio');
+  }
+
+  function logout() {
+    closeMenu();
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('auth-screen').classList.remove('hidden');
+    backToEmail();
+    document.getElementById('email-input').value = '';
+  }
+
+  // code inputs: auto-advance + backspace
+  document.querySelectorAll('.code-box').forEach((box, i, arr) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(0, 1);
+      if (box.value && arr[i + 1]) arr[i + 1].focus();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && arr[i - 1]) arr[i - 1].focus();
+    });
+  });
+
+  /* ===== Photo upload (couple) ===== */
+  function pickPhoto(person) { document.getElementById('file-' + person).click(); }
+  function onPhoto(person, input) {
+    const f = input.files && input.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => setPhoto(person, r.result);
+    r.readAsDataURL(f);
+  }
+  function setPhoto(person, url) {
+    document.querySelectorAll('[data-person="' + person + '"]').forEach(el => {
+      el.style.backgroundImage = 'url(' + url + ')';
+      el.classList.add('has-photo');
+    });
+    toast('Foto actualizada', 'ti-camera');
+  }
+</script>
+</body>
+</html>
