@@ -465,6 +465,12 @@
   .auth-link { color: var(--ing-gold-deep); font-weight: 700; cursor: pointer; text-decoration: none; }
   .auth-muted-link { color: var(--ing-muted); cursor: pointer; }
 
+  /* ===== GUEST (sin cuenta) ===== */
+  .hdr-login { display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.14); color: #fff; border: none; border-radius: 13px; padding: 9px 14px; font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .hdr-login i { font-size: 16px; }
+  body.guest .hdr-av { display: none; }
+  body.guest #hdr-login { display: inline-flex; }
+
   /* ===== AVATAR MENU OVERLAY ===== */
   .menu-overlay { position: absolute; inset: 0; background: rgba(13,33,56,0.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
   .menu-overlay.open { opacity: 1; pointer-events: auto; }
@@ -520,6 +526,7 @@
             <input class="inp" id="email-input" type="email" placeholder="tucorreo@ejemplo.com" autocomplete="email"/>
           </div>
           <button class="btn-cta" onclick="submitEmail()"><i class="ti ti-mail"></i> Continuar</button>
+          <div style="text-align:center;margin-top:14px;font-size:12.5px;"><a class="auth-muted-link" onclick="enterGuest()">← Explorar sin cuenta</a></div>
         </div>
         <div class="auth-hint">
           <div class="ht">Correos de demostración · toca para usar</div>
@@ -558,11 +565,12 @@
     <div class="top-bar">
       <div class="row">
         <div>
-          <div class="greeting">Buenos días,</div>
+          <div class="greeting" id="hdr-greeting">Buenos días,</div>
           <div class="name" id="hdr-name">Valeria &amp; Camila</div>
           <div class="subtitle" id="hdr-subtitle">PROGRAMA ROPA · INGENES CDMX SUR</div>
         </div>
         <div class="h-actions">
+          <button class="hdr-login" id="hdr-login" onclick="showAuth()"><i class="ti ti-login-2"></i> Entrar</button>
           <div class="hdr-av" onclick="openMenu()">
             <div class="av p-a" data-person="A"><span class="ini">VS</span></div>
             <div class="av p-b" data-person="B"><span class="ini">CR</span></div>
@@ -572,6 +580,48 @@
     </div>
 
     <div class="scroll-area">
+
+      <!-- ===================== GUEST · sin cuenta ===================== -->
+      <div id="inicio-guest" style="display:none;">
+
+        <!-- Vista previa del camino -->
+        <div class="journey-card">
+          <div class="jc-label">Tu camino en Ingenes</div>
+          <div class="jc-title">Conoce tu camino con nosotros</div>
+          <div class="steps six">
+            <div class="step"><div class="dot"><i class="ti ti-calendar-plus"></i></div><div class="lbl">Agenda</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-stethoscope"></i></div><div class="lbl">Primera<br>consulta</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-microscope"></i></div><div class="lbl">Estudios y<br>diagnóstico</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-clipboard-heart"></i></div><div class="lbl">Plan de<br>tratamiento</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-vaccine"></i></div><div class="lbl">Tratamiento</div></div>
+            <div class="step"><div class="dot"><i class="ti ti-baby-carriage"></i></div><div class="lbl">Embarazo</div></div>
+          </div>
+        </div>
+
+        <div class="section-title">Comienza tu camino</div>
+
+        <!-- CTA registro / login -->
+        <div class="update pinned">
+          <span class="u-tag gold"><i class="ti ti-sparkles" style="font-size:12px;"></i> Comienza hoy</span>
+          <div class="u-body">Crea tu cuenta o inicia sesión para comenzar tu camino hacia la maternidad y dar seguimiento a tu proceso desde un solo lugar.</div>
+          <div class="u-actions">
+            <button class="btn-primary" onclick="showAuth()"><i class="ti ti-login-2"></i> Crear cuenta / Iniciar sesión</button>
+          </div>
+        </div>
+
+        <!-- Propuesta de valor -->
+        <div class="card">
+          <div class="section-title" style="margin:2px 0 8px;">Tu primera consulta incluye</div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Asesoría médica online sin costo para conocer tu caso</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Consulta presencial con un médico especialista en fertilidad</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Estudios necesarios para tu diagnóstico, el mismo día</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Evaluación completa de tu salud reproductiva</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Plan de tratamiento personalizado a tu medida</span></div>
+          <div class="incl"><i class="ti ti-circle-check"></i><span>Asesoría financiera y planes de pago</span></div>
+        </div>
+
+        <div style="height:6px;"></div>
+      </div>
 
       <!-- ===================== STAGE 0 · no_ha_agendado ===================== -->
       <div id="inicio-stage0" style="display:none;">
@@ -1995,8 +2045,20 @@
     document.getElementById('dato-correo').value = email;
     document.getElementById('dato-telefono').value = u.tel;
 
+    // Logged-in: salir de modo invitado y restaurar saludo
+    document.body.classList.remove('guest');
+    document.getElementById('hdr-greeting').textContent = 'Buenos días,';
+
     // Content variants per user, selectable per screen (u.views), fallback to uniform u.content
     const v = u.views || { inicio: u.content, aprende: u.content, docs: u.content, cal: u.content, equipo: u.content, miplan: u.content };
+    applyViews(v);
+
+    applyStage(u.stage);
+  }
+
+  // Muestra/oculta las variantes de contenido de cada pantalla
+  function applyViews(v) {
+    document.getElementById('inicio-guest').style.display = v.inicio === 'guest' ? '' : 'none';
     document.getElementById('inicio-stage0').style.display = v.inicio === 's0' ? '' : 'none';
     document.getElementById('inicio-stage1').style.display = v.inicio === 's1' ? '' : 'none';
     document.getElementById('inicio-s2').style.display = v.inicio === 's2' ? '' : 'none';
@@ -2014,8 +2076,28 @@
     document.getElementById('equipo-default').style.display = v.equipo === 's2' ? 'none' : 'flex';
     document.getElementById('miplan-s2').style.display = v.miplan === 's2' ? '' : 'none';
     document.getElementById('miplan-default').style.display = v.miplan === 's2' ? 'none' : '';
+  }
 
-    applyStage(u.stage);
+  /* ===== Modo invitado (sin cuenta) ===== */
+  function applyGuest() {
+    document.body.classList.add('guest');
+    document.getElementById('hdr-greeting').textContent = 'Te damos la bienvenida a';
+    document.getElementById('hdr-name').textContent = 'Ingenes';
+    document.getElementById('hdr-subtitle').textContent = 'Tu camino hacia la maternidad';
+    applyViews({ inicio: 'guest', aprende: 's0', docs: 's0', cal: 's0', equipo: 'default', miplan: 'default' });
+    applyStage(0);
+  }
+  function enterGuest() {
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    applyGuest();
+    showScreen('inicio');
+  }
+  function showAuth() {
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('auth-screen').classList.remove('hidden');
+    backToEmail();
+    document.getElementById('email-input').value = '';
   }
 
   /* ===== Navigation ===== */
@@ -2031,6 +2113,7 @@
   // bottom-nav tap: respect locked state
   function navTo(name, btn) {
     if (btn && btn.classList.contains('locked')) {
+      if (document.body.classList.contains('guest')) { showAuth(); return; }
       toast(btn.dataset.lock || 'Sección no disponible aún', 'ti-lock');
       return;
     }
@@ -2093,10 +2176,7 @@
 
   function logout() {
     closeMenu();
-    document.getElementById('app').classList.add('hidden');
-    document.getElementById('auth-screen').classList.remove('hidden');
-    backToEmail();
-    document.getElementById('email-input').value = '';
+    enterGuest();
   }
 
   // code inputs: auto-advance + backspace
@@ -2109,6 +2189,9 @@
       if (e.key === 'Backspace' && !box.value && arr[i - 1]) arr[i - 1].focus();
     });
   });
+
+  /* ===== Inicial: pantalla pública (modo invitado) ===== */
+  enterGuest();
 
   /* ===== Photo upload (couple) ===== */
   function pickPhoto(person) { document.getElementById('file-' + person).click(); }
